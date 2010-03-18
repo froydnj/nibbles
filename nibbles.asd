@@ -8,4 +8,5 @@
   :components ((:static-file "LICENSE")
                (:file "package")
                (:file "types" :depends-on ("package"))
-               (:file "vectors" :depends-on ("types"))))
+               (:file "vectors" :depends-on ("types"))
+               (:file "streams" :depends-on ("vectors"))))
