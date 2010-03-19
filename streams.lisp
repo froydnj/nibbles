@@ -16,28 +16,29 @@
 (defun write-byte* (integer stream n-bytes setter)
   (let ((v (make-array n-bytes :element-type '(unsigned-byte 8))))
     (declare (dynamic-extent v))
-    (funcall setter integer v 0)
+    (funcall setter v 0 integer)
     (write-sequence v stream)
     integer))
 
-#.(loop for bitsize in '(16 32 64)
-        collect (loop for i from 0 below 8
-                      for readp = (logbitp 2 i)
-                      for signedp = (logbitp 1 i)
-                      for big-endian-p = (logbitp 0 i)
-                      collect (let* ((name (stream-ref-fun-name bitsize readp signedp big-endian-p))
-                                     (n-bytes (truncate bitsize 8))
-                                     (byte-ref (byte-ref-fun-name bitsize signedp big-endian-p))
-                                     (accessor (if readp
-                                                   byte-ref
-                                                   `(setf ,byte-ref)))
-                                     (arglist (if readp
-                                                  '(stream)
-                                                  '(integer stream)))
-                                     (subfun (if readp
-                                                 'read-byte*
-                                                 'write-byte*)))
-                                `(defun ,name ,arglist
-                                   (,subfun ,@arglist ,n-bytes #',accessor))) into forms
-                      finally (return `(progn ,@forms))) into forms
+#.(loop for i from 0 upto #b10111
+        for bitsize = (ecase (ldb (byte 2 3) i)
+                        (0 16)
+                        (1 32)
+                        (2 64))
+        for readp = (logbitp 2 i)
+        for signedp = (logbitp 1 i)
+        for big-endian-p = (logbitp 0 i)
+        collect (let* ((name (stream-ref-fun-name bitsize readp signedp big-endian-p))
+                       (n-bytes (truncate bitsize 8))
+                       (byte-fun (if readp
+                                     (byte-ref-fun-name bitsize signedp big-endian-p)
+                                     (byte-set-fun-name bitsize signedp big-endian-p)))
+                       (arglist (if readp
+                                    '(stream)
+                                    '(integer stream)))
+                       (subfun (if readp
+                                   'read-byte*
+                                   'write-byte*)))
+                  `(defun ,name ,arglist
+                     (,subfun ,@arglist ,n-bytes #',byte-fun))) into forms
         finally (return `(progn ,@forms)))
