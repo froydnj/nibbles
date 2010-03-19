@@ -2,6 +2,18 @@
 
 (cl:in-package :nibbles)
 
+(declaim (inline array-data-and-offsets))
+(defun array-data-and-offsets (v start end)
+  "Like ARRAY-DISPLACEMENT, only more useful."
+  #+sbcl
+  (sb-kernel:with-array-data ((v v) (start start) (end end))
+    (values v start end))
+  #+cmu
+  (lisp::with-array-data ((v v) (start start) (end end))
+    (values v start end))
+  #-(or sbcl cmu)
+  (values v start (or end (length v))))
+
 (macrolet ((define-fetcher (bitsize signedp big-endian-p)
              (let ((ref-name (byte-ref-fun-name bitsize signedp big-endian-p))
                    (bytes (truncate bitsize 8)))
