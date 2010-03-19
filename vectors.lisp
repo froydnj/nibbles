@@ -21,7 +21,7 @@
                   (declare (type octet-vector buffer))
                   (declare (type (integer 0 ,(- array-dimension-limit bytes)) index))
                   (multiple-value-bind (vector start end)
-                      (array-data-and-offsets (buffer index (+ index ,bytes)))
+                      (array-data-and-offsets buffer index (+ index ,bytes))
                     (declare (ignore end))
                     (let ((value (logand ,(1- (ash 1 bitsize))
                                          ,(loop for i from 0 below bytes
