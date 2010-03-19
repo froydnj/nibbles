@@ -18,39 +18,45 @@
              (let ((ref-name (byte-ref-fun-name bitsize signedp big-endian-p))
                    (bytes (truncate bitsize 8)))
                `(defun ,ref-name (buffer index)
-                   (declare (type simple-octet-vector buffer))
-                   (declare (type (integer 0 ,(- array-dimension-limit bytes)) index))
-                   (let ((value (logand ,(1- (ash 1 bitsize))
-                                        ,(loop for i from 0 below bytes
-                                               collect (let* ((offset (if big-endian-p
-                                                                          i
-                                                                          (- bytes i 1)))
-                                                              (shift (if big-endian-p
-                                                                         (* (- bytes i 1) 8)
-                                                                         (* offset 8))))
-                                                         `(ash (aref buffer (+ index ,offset)) ,shift)) into forms
-                                               finally (return `(logior ,@forms))))))
-                     ,(if signedp
-                          `(if (logbitp ,(1- bitsize) value)
-                               (dpb value (byte ,bitsize 0) -1)
-                               value)
-                          'value)))))
+                  (declare (type octet-vector buffer))
+                  (declare (type (integer 0 ,(- array-dimension-limit bytes)) index))
+                  (multiple-value-bind (vector start end)
+                      (array-data-and-offsets (buffer index (+ index ,bytes)))
+                    (declare (ignore end))
+                    (let ((value (logand ,(1- (ash 1 bitsize))
+                                         ,(loop for i from 0 below bytes
+                                                collect (let* ((offset (if big-endian-p
+                                                                           i
+                                                                           (- bytes i 1)))
+                                                               (shift (if big-endian-p
+                                                                          (* (- bytes i 1) 8)
+                                                                          (* offset 8))))
+                                                          `(ash (aref vector (+ start ,offset)) ,shift)) into forms
+                                                finally (return `(logior ,@forms))))))
+                      ,(if signedp
+                           `(if (logbitp ,(1- bitsize) value)
+                                (dpb value (byte ,bitsize 0) -1)
+                                value)
+                           'value))))))
            (define-storer (bitsize signedp big-endian-p)
              (let ((ref-name (byte-ref-fun-name bitsize signedp big-endian-p))
                    (set-name (byte-set-fun-name bitsize signedp big-endian-p))
                    (bytes (truncate bitsize 8)))
                `(progn
                  (defun ,set-name (buffer index value)
-                   (declare (type simple-octet-vector buffer))
+                   (declare (type octet-vector buffer))
                    (declare (type (integer 0 ,(- array-dimension-limit bytes)) index))
                    (declare (type (unsigned-byte ,bitsize) value))
-                   ,@(loop for i from 1 to bytes
-                           collect (let ((offset (if big-endian-p
-                                                     (- bytes i)
-                                                     (1- i))))
-                                     `(setf (aref buffer (+ index ,offset))
-                                            (ldb (byte 8 ,(* 8 (1- i))) value))))
-                   value)
+                   (multiple-value-bind (vector start end)
+                       (array-data-and-offsets buffer index (+ index ,bytes))
+                     (declare (ignore end))
+                     ,@(loop for i from 1 to bytes
+                             collect (let ((offset (if big-endian-p
+                                                       (- bytes i)
+                                                       (1- i))))
+                                       `(setf (aref vector (+ start ,offset))
+                                              (ldb (byte 8 ,(* 8 (1- i))) value))))
+                     value))
                  (defsetf ,ref-name ,set-name))))
            (define-fetchers-and-storers (bitsize)
                (loop for i from 0 below 4
