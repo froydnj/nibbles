@@ -17,8 +17,7 @@
 (macrolet ((define-fetcher (bitsize signedp big-endian-p)
              (let ((ref-name (byte-ref-fun-name bitsize signedp big-endian-p))
                    (bytes (truncate bitsize 8)))
-               `(progn
-                 (defun ,ref-name (buffer index)
+               `(defun ,ref-name (buffer index)
                    (declare (type simple-octet-vector buffer))
                    (declare (type (integer 0 ,(- array-dimension-limit bytes)) index))
                    (let ((value (logand ,(1- (ash 1 bitsize))
@@ -35,7 +34,7 @@
                           `(if (logbitp ,(1- bitsize) value)
                                (dpb value (byte ,bitsize 0) -1)
                                value)
-                          'value))))))
+                          'value)))))
            (define-storer (bitsize signedp big-endian-p)
              (let ((ref-name (byte-ref-fun-name bitsize signedp big-endian-p))
                    (set-name (byte-set-fun-name bitsize signedp big-endian-p))
