@@ -15,10 +15,10 @@
         finally (return `(progn ,@forms)))
 
 (macrolet ((define-fetcher (bitsize signedp big-endian-p)
-             (let ((name (byte-ref-fun-name bitsize signedp big-endian-p))
+             (let ((ref-name (byte-ref-fun-name bitsize signedp big-endian-p))
                    (bytes (truncate bitsize 8)))
                `(progn
-                 (defun ,name (buffer index)
+                 (defun ,ref-name (buffer index)
                    (declare (type simple-octet-vector buffer))
                    (declare (type (integer 0 ,(- array-dimension-limit bytes)) index))
                    (let ((value (logand ,(1- (ash 1 bitsize))
@@ -37,10 +37,11 @@
                                value)
                           'value))))))
            (define-storer (bitsize signedp big-endian-p)
-             (let ((name (byte-ref-fun-name bitsize signedp big-endian-p))
+             (let ((ref-name (byte-ref-fun-name bitsize signedp big-endian-p))
+                   (set-name (byte-set-fun-name bitsize signedp big-endian-p))
                    (bytes (truncate bitsize 8)))
                `(progn
-                 (defun (setf ,name) (value buffer index)
+                 (defun ,set-name (buffer index value)
                    (declare (type simple-octet-vector buffer))
                    (declare (type (integer 0 ,(- array-dimension-limit bytes)) index))
                    (declare (type (unsigned-byte ,bitsize) value))
@@ -50,7 +51,8 @@
                                                      (1- i))))
                                      `(setf (aref buffer (+ index ,offset))
                                        (,(intern (format nil "~:@(~:R~)-BYTE" i)) value))))
-                   (values)))))
+                   (values))
+                 (defsetf ,ref-name ,set-name))))
            (define-fetchers-and-storers (bitsize)
                (loop for i from 0 below 4
                      for signedp = (logbitp 1 i)
