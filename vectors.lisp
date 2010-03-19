@@ -38,7 +38,7 @@
                                                      (1- i))))
                                      `(setf (aref buffer (+ index ,offset))
                                             (ldb (byte 8 ,(* 8 (1- i))) value))))
-                   (values))
+                   value)
                  (defsetf ,ref-name ,set-name))))
            (define-fetchers-and-storers (bitsize)
                (loop for i from 0 below 4
