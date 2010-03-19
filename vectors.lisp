@@ -75,18 +75,24 @@
 (defun ieee-single-ref/be (buffer index)
   #+sbcl
   (sb-kernel:make-single-float (sb32ref/be buffer index))
+  #+cmu
+  (kernel:make-single-float (sb32ref/be buffer index))
   #+ccl
   (ccl::host-single-float-from-unsigned-byte-32 (ub32ref/be buffer index))
   #+allegro
   (let ((b (ub32ref/be buffer index)))
     (excl:shorts-to-single-float (ldb (byte 16 16) b) (ldb (byte 16 0) b)))
-  #-(or sbcl ccl allegro)
+  #-(or sbcl cmu ccl allegro)
   (not-supported))
 
 (defun (setf ieee-single-ref/be) (value buffer index)
   #+sbcl
   (progn
     (setf (sb32ref/be buffer index) (sb-kernel:single-float-bits value))
+    value)
+  #+cmu
+  (progn
+    (setf (sb32ref/be buffer index) (kernel:single-float-bits value))
     value)
   #+ccl
   (progn
@@ -97,24 +103,30 @@
     (setf (ub16ref/be buffer index) hi
           (ub16ref/be buffer (+ index 2) lo))
     value)
-  #-(or sbcl ccl allegro)
+  #-(or sbcl cmu ccl allegro)
   (not-supported))
 
 (defun ieee-single-ref/le (buffer index)
   #+sbcl
   (sb-kernel:make-single-float (sb32ref/le buffer index))
+  #+cmu
+  (kernel:make-single-float (sb32ref/le buffer index))
   #+ccl
   (ccl::host-single-float-from-unsigned-byte-32 (ub32ref/le buffer index))
   #+allegro
   (let ((b (ub32ref/le buffer index)))
     (excl:shorts-to-single-float (ldb (byte 16 16) b) (ldb (byte 16 0) b)))
-  #-(or sbcl ccl allegro)
+  #-(or sbcl cmu ccl allegro)
   (not-supported))
 
 (defun (setf ieee-single-ref/le) (value buffer index)
   #+sbcl
   (progn
     (setf (sb32ref/le buffer index) (sb-kernel:single-float-bits value))
+    value)
+  #+cmu
+  (progn
+    (setf (sb32ref/le buffer index) (kernel:single-float-bits value))
     value)
   #+ccl
   (progn
@@ -125,7 +137,7 @@
     (setf (ub16ref/le buffer (+ index 2)) hi
           (ub16ref/le buffer index lo))
     value)
-  #-(or sbcl ccl allegro)
+  #-(or sbcl cmu ccl allegro)
   (not-supported))
 
 (defun ieee-double-ref/be (buffer index)
@@ -133,11 +145,15 @@
   (let ((upper (sb32ref/be buffer index))
         (lower (ub32ref/be buffer (+ index 4))))
     (sb-kernel:make-double-float upper lower))
+  #+cmu
+  (let ((upper (sb32ref/be buffer index))
+        (lower (ub32ref/be buffer (+ index 4))))
+    (kernel:make-double-float upper lower))
   #+ccl
   (let ((upper (ub32ref/be buffer index))
         (lower (ub32ref/be buffer (+ index 4))))
     (ccl::make-double-float-from-bits upper lower))
-  #-(or sbcl ccl)
+  #-(or sbcl cmu ccl)
   (not-supported))
 
 (defun (setf ieee-double-ref/be) (value buffer index)
@@ -146,12 +162,17 @@
     (setf (sb32ref/be buffer index) (sb-kernel:double-float-high-bits value)
           (ub32ref/be buffer (+ index 4)) (sb-kernel:double-float-low-bits value))
     value)
+  #+cmu
+  (progn
+    (setf (sb32ref/be buffer index) (kernel:double-float-high-bits value)
+          (ub32ref/be buffer (+ index 4)) (kernel:double-float-low-bits value))
+    value)
   #+ccl
   (multiple-value-bind (upper lower) (ccl::double-float-bits value)
     (setf (ub32ref/be buffer index) upper
           (ub32ref/be buffer (+ index 4)) lower)
     value)
-  #-(or sbcl ccl)
+  #-(or sbcl cmu ccl)
   (not-supported))
 
 (defun ieee-double-ref/le (buffer index)
@@ -159,11 +180,15 @@
   (let ((upper (sb32ref/le buffer (+ index 4)))
         (lower (ub32ref/le buffer index)))
     (sb-kernel:make-double-float upper lower))
+  #+cmu
+  (let ((upper (sb32ref/le buffer (+ index 4)))
+        (lower (ub32ref/le buffer index)))
+    (kernel:make-double-float upper lower))
   #+ccl
   (let ((upper (ub32ref/le buffer (+ index 4)))
         (lower (ub32ref/le buffer index)))
     (ccl::make-double-float-from-bits upper lower))
-  #-(or sbcl ccl)
+  #-(or sbcl cmu ccl)
   (not-supported))
 
 (defun (setf ieee-double-ref/le) (value buffer index)
@@ -172,10 +197,15 @@
     (setf (sb32ref/le buffer (+ index 4)) (sb-kernel:double-float-high-bits value)
           (ub32ref/le buffer index) (sb-kernel:double-float-low-bits value))
     value)
+  #+cmu
+  (progn
+    (setf (sb32ref/le buffer (+ index 4)) (kernel:double-float-high-bits value)
+          (ub32ref/le buffer index) (kernel:double-float-low-bits value))
+    value)
   #+ccl
   (multiple-value-bind (upper lower) (ccl::double-float-bits value)
     (setf (ub32ref/le buffer (+ index 4)) upper
           (ub32ref/le buffer index) lower)
     value)
-  #-(or sbcl ccl)
+  #-(or sbcl cmu ccl)
   (not-supported))
