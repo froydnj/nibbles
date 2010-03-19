@@ -73,6 +73,7 @@
   (error "not supported"))
 
 (defun ieee-single-ref/be (buffer index)
+  (declare (ignorable buffer index))
   #+sbcl
   (sb-kernel:make-single-float (sb32ref/be buffer index))
   #+cmu
@@ -93,6 +94,7 @@
   (not-supported))
 
 (defun (setf ieee-single-ref/be) (value buffer index)
+  (declare (ignorable value buffer index))
   #+sbcl
   (progn
     (setf (sb32ref/be buffer index) (sb-kernel:single-float-bits value))
@@ -121,6 +123,7 @@
   (not-supported))
 
 (defun ieee-single-ref/le (buffer index)
+  (declare (ignorable buffer index))
   #+sbcl
   (sb-kernel:make-single-float (sb32ref/le buffer index))
   #+cmu
@@ -141,6 +144,7 @@
   (not-supported))
 
 (defun (setf ieee-single-ref/le) (value buffer index)
+  (declare (ignorable value buffer index))
   #+sbcl
   (progn
     (setf (sb32ref/le buffer index) (sb-kernel:single-float-bits value))
@@ -169,6 +173,7 @@
   (not-supported))
 
 (defun ieee-double-ref/be (buffer index)
+  (declare (ignorable buffer index))
   #+sbcl
   (let ((upper (sb32ref/be buffer index))
         (lower (ub32ref/be buffer (+ index 4))))
@@ -185,6 +190,7 @@
   (not-supported))
 
 (defun (setf ieee-double-ref/be) (value buffer index)
+  (declare (ignorable value buffer index))
   #+sbcl
   (progn
     (setf (sb32ref/be buffer index) (sb-kernel:double-float-high-bits value)
@@ -204,6 +210,7 @@
   (not-supported))
 
 (defun ieee-double-ref/le (buffer index)
+  (declare (ignorable buffer index))
   #+sbcl
   (let ((upper (sb32ref/le buffer (+ index 4)))
         (lower (ub32ref/le buffer index)))
@@ -220,6 +227,7 @@
   (not-supported))
 
 (defun (setf ieee-double-ref/le) (value buffer index)
+  (declare (ignorable value buffer index))
   #+sbcl
   (progn
     (setf (sb32ref/le buffer (+ index 4)) (sb-kernel:double-float-high-bits value)
