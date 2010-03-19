@@ -82,7 +82,14 @@
   #+allegro
   (let ((b (ub32ref/be buffer index)))
     (excl:shorts-to-single-float (ldb (byte 16 16) b) (ldb (byte 16 0) b)))
-  #-(or sbcl cmu ccl allegro)
+  #+lispworks
+  (let* ((ub (ub32ref/be buffer index))
+         (v (sys:make-typed-aref-vector 4)))
+    (declare (optimize (speed 3) (float 0) (safety 0)))
+    (declare (dynamic-extent v))
+    (setf (sys:typed-aref '(unsigned-byte 32) v 0) ub)
+    (sys:typed-aref 'single-float v 0))
+  #-(or sbcl cmu ccl allegro lispworks)
   (not-supported))
 
 (defun (setf ieee-single-ref/be) (value buffer index)
@@ -103,7 +110,14 @@
     (setf (ub16ref/be buffer index) hi
           (ub16ref/be buffer (+ index 2) lo))
     value)
-  #-(or sbcl cmu ccl allegro)
+  #+lispworks
+  (let* ((v (sys:make-typed-aref-vector 4)))
+    (declare (optimize (speed 3) (float 0) (safety 0)))
+    (declare (dynamic-extent v))
+    (setf (sys:typed-aref 'single-float v 0) value)
+    (setf (ub32ref/be buffer index) (sys:typed-aref '(unsigned-byte 32) v 0))
+    value)
+  #-(or sbcl cmu ccl allegro lispworks)
   (not-supported))
 
 (defun ieee-single-ref/le (buffer index)
@@ -116,7 +130,14 @@
   #+allegro
   (let ((b (ub32ref/le buffer index)))
     (excl:shorts-to-single-float (ldb (byte 16 16) b) (ldb (byte 16 0) b)))
-  #-(or sbcl cmu ccl allegro)
+  #+lispworks
+  (let* ((ub (ub32ref/le buffer index))
+         (v (sys:make-typed-aref-vector 4)))
+    (declare (optimize (speed 3) (float 0) (safety 0)))
+    (declare (dynamic-extent v))
+    (setf (sys:typed-aref '(unsigned-byte 32) v 0) ub)
+    (sys:typed-aref 'single-float v 0))
+  #-(or sbcl cmu ccl allegro lispworks)
   (not-supported))
 
 (defun (setf ieee-single-ref/le) (value buffer index)
@@ -137,7 +158,14 @@
     (setf (ub16ref/le buffer (+ index 2)) hi
           (ub16ref/le buffer index lo))
     value)
-  #-(or sbcl cmu ccl allegro)
+  #+lispworks
+  (let* ((v (sys:make-typed-aref-vector 4)))
+    (declare (optimize (speed 3) (float 0) (safety 0)))
+    (declare (dynamic-extent v))
+    (setf (sys:typed-aref 'single-float v 0) value)
+    (setf (ub32ref/le buffer index) (sys:typed-aref '(unsigned-byte 32) v 0))
+    value)
+  #-(or sbcl cmu ccl allegro lispworks)
   (not-supported))
 
 (defun ieee-double-ref/be (buffer index)
