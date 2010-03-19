@@ -2,18 +2,6 @@
 
 (cl:in-package :nibbles)
 
-;;; These functions are named according to big-endian conventions.  The
-;;; comment is here because I always forget and need to be reminded.
-#.(loop for i from 1 to 8
-        collect (let ((name (intern (format nil "~:@(~:R~)-BYTE" i))))
-                  `(progn
-                    (declaim (inline ,name))
-                    (declaim (ftype (function (unsigned-byte) (unsigned-byte 8)) ,name))
-                    (defun ,name (ub)
-                      (declare (type unsigned-byte ub))
-                      (ldb (byte 8 ,(* 8 (1- i))) ub)))) into forms
-        finally (return `(progn ,@forms)))
-
 (macrolet ((define-fetcher (bitsize signedp big-endian-p)
              (let ((ref-name (byte-ref-fun-name bitsize signedp big-endian-p))
                    (bytes (truncate bitsize 8)))
@@ -49,7 +37,7 @@
                                                      (- bytes i)
                                                      (1- i))))
                                      `(setf (aref buffer (+ index ,offset))
-                                       (,(intern (format nil "~:@(~:R~)-BYTE" i)) value))))
+                                            (ldb (byte 8 ,(* 8 (1- i))) value))))
                    (values))
                  (defsetf ,ref-name ,set-name))))
            (define-fetchers-and-storers (bitsize)
