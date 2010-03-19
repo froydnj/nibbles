@@ -2,12 +2,6 @@
 
 (cl:in-package :nibbles)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-(defun byte-ref-fun-name (bitsize signedp big-endian-p)
-  (intern (format nil "~:[U~;S~]B~DREF/~:[LE~;BE~]"
-                  signedp bitsize big-endian-p)))
-) ; EVAL-WHEN
-
 ;;; These functions are named according to big-endian conventions.  The
 ;;; comment is here because I always forget and need to be reminded.
 #.(loop for i from 1 to 8

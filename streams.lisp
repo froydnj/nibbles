@@ -2,16 +2,6 @@
 
 (cl:in-package :nibbles)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-(defun byte-ref-fun-name (bitsize signedp big-endian-p)
-  (intern (format nil "~:[U~;S~]B~DREF/~:[LE~;BE~]"
-                  signedp bitsize big-endian-p)))
-
-(defun stream-ref-fun-name (bitsize readp signedp big-endian-p)
-  (intern (format nil "~:[WRITE~;READ~]-~:[U~;S~]B~D/~:[LE~;BE~]"
-                  readp signedp bitsize big-endian-p)))
-) ; EVAL-WHEN
-
 (declaim (inline read-byte* write-byte*))
 (defun read-byte* (stream n-bytes reffer)
   (let ((v (make-array n-bytes :element-type '(unsigned-byte 8))))

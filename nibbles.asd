@@ -9,5 +9,7 @@
                (:static-file "LICENSE")
                (:file "package")
                (:file "types" :depends-on ("package"))
-               (:file "vectors" :depends-on ("types"))
+               (:file "macro-utils" :depends-on ("package"))
+               (:file "vectors" :depends-on ("types")
+                      :in-order-to ((compile-op (load-op "macro-utils"))))
                (:file "streams" :depends-on ("vectors"))))
