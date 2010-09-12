@@ -6,11 +6,16 @@
            ;; Bleh.  No good way to solve this atm.
            ;;
            ;; Non-x86.  No support.
-           #-x86
+           #-(or x86 x86-64)
            nil
            ;; x86.  Can do everything.
            #+x86
-           t))
+           t
+           ;; x86-64.  Can't do 16-bit right now.  Must verify that the
+           ;; 16-bit ROL support does the right thing for all registers
+           ;; first.
+           #+x86-64
+           (/= bitsize 16)))
     (loop for i from 0 to #-x86-64 #b0111 #+x86-64 #b1011
           for bitsize = (ecase (ldb (byte 2 2) i)
                           (0 16)

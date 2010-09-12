@@ -22,4 +22,7 @@
                                      (:file "nib-tran" :depends-on ("fndb"))
                                      (:file "x86-vm"
                                             :in-order-to ((compile-op (feature :x86))
+                                                          (compile-op (load-op "fndb"))))
+                                     (:file "x86-64-vm" :depends-on ("fndb")
+                                            :in-order-to ((compile-op (feature :x86-64))
                                                           (compile-op (load-op "fndb"))))))))
