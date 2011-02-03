@@ -3,6 +3,7 @@
 (cl:in-package :nibbles)
 
 #.(flet ((includep (bitsize signedp setterp)
+           (declare (ignorable bitsize signedp setterp))
            ;; Bleh.  No good way to solve this atm.
            ;;
            ;; Non-x86.  No support.

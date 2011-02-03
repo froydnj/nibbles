@@ -92,7 +92,8 @@
                     ,@(if setterp
                           '((move result value))
                           (when big-endian-p
-                            `((inst rol ax-tn 8)
+                            `(eax       ; hack so that it looks used
+                              (inst rol ax-tn 8)
                               (inst ,(if signedp 'movsx 'movzx)
                                     result ax-tn))))))))))
     (loop for i from 0 upto #b111
