@@ -2,7 +2,7 @@
 
 (cl:in-package :nibbles)
 
-#.(flet ((includep (bitsize signedp setterp)
+#.(flet ((specialized-includep (bitsize signedp setterp)
            (declare (ignorable bitsize signedp setterp))
            ;; Bleh.  No good way to solve this atm.
            ;;
@@ -16,7 +16,15 @@
            ;; 16-bit ROL support does the right thing for all registers
            ;; first.
            #+x86-64
-           (/= bitsize 16)))
+           (/= bitsize 16))
+         (generic-transform-form (fun-name arglist n-bytes
+                                           setterp signedp big-endian-p)
+           (let ((offset-type `(unsigned-byte 0 ,(- array-dimension-limit n-bytes))))
+           `(sb-c:deftransform ,fun-name ,arglist
+              `(locally (declare (type ,offset-type) offset)
+                 ,(if setterp
+                      ,(set-form 'vector 'offset 'value n-bytes big-endian-p)
+                      ,(ref-form 'vector 'offset n-bytes signedp big-endian-p)))))))
     (loop for i from 0 to #-x86-64 #b0111 #+x86-64 #b1011
           for bitsize = (ecase (ldb (byte 2 2) i)
                           (0 16)
@@ -31,24 +39,40 @@
           for little-fun = (funcall byte-fun bitsize signedp nil)
           for internal-big = (internalify big-fun)
           for internal-little = (internalify little-fun)
+          for n-bytes = (truncate bitsize 8)
           for arg-type = `(,(if signedp
                                 'signed-byte
                                 'unsigned-byte)
                                 ,bitsize)
+          for arglist = `(vector offset ,@(when setterp '(value)))
           for external-arg-types = `(array index ,@(when setterp
                                                      `(,arg-type)))
           for internal-arg-types = (subst '(simple-array (unsigned-byte 8)) 'array
                                           external-arg-types)
-          for big-transform = `(sb-c:deftransform ,big-fun ((vector offset ,@(when setterp
-                                                                               '(value)))
-                                                                    ,internal-arg-types ,arg-type)
-                                 '(,internal-big vector (%check-bound vector (length vector) offset ,(truncate bitsize 8))
-                                   ,@(when setterp '(value))))
-          for little-transform = (subst internal-little
-                                          internal-big
-                                          (subst little-fun big-fun big-transform))
-          when (includep bitsize signedp setterp)
-            collect big-transform into transforms
-          when (includep bitsize signedp setterp)
-            collect little-transform into transforms
+          for transform-arglist = `(,arglist ,internal-arg-types ,arg-type)
+          for specialized-big-transform
+            = `(sb-c:deftransform ,big-fun ,transform-arglist
+                 '(,internal-big vector (%check-bound vector (length vector) offset ,n-bytes)
+                   ,@(when setterp '(value))))
+          for specialized-little-transform
+            = (subst internal-little internal-big
+                                     (subst little-fun big-fun
+                                            specialized-big-transform))
+          ;; Also include inlining versions for when the argument type
+          ;; is known to be a simple octet vector and we don't have a
+          ;; native assembly implementation.
+          for generic-big-transform
+            = (generic-transform-form big-fun transform-arglist n-bytes
+                      setterp signedp t)
+          for generic-little-transform
+            = (generic-transform-form little-fun transform-arglist n-bytes
+                      setterp signedp nil)
+          if (specialized-includep bitsize signedp setterp)
+            collect specialized-big-transform into transforms
+          else if (<= bitsize sb-vm:n-word-bits)
+            collect generic-big-transform into transforms
+          if (specialized-includep bitsize signedp setterp)
+            collect specialized-little-transform into transforms
+          else if (<= bitsize sb-vm:n-word-bits)
+            collect generic-little-transform into transforms
           finally (return `(progn ,@transforms))))
