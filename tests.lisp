@@ -93,27 +93,27 @@
 ;;; Big-endian integer ref tests
 
 (rtest:deftest :ub16ref/be
-  (ref-test #'nibbles:ub16ref/be 2 nil t)
+  (ref-test 'nibbles:ub16ref/be 2 nil t)
   :ok)
 
 (rtest:deftest :sb16ref/be
-  (ref-test #'nibbles:sb16ref/be 2 t t)
+  (ref-test 'nibbles:sb16ref/be 2 t t)
   :ok)
 
 (rtest:deftest :ub32ref/be
-  (ref-test #'nibbles:ub32ref/be 4 nil t)
+  (ref-test 'nibbles:ub32ref/be 4 nil t)
   :ok)
 
 (rtest:deftest :sb32ref/be
-  (ref-test #'nibbles:sb32ref/be 4 t t)
+  (ref-test 'nibbles:sb32ref/be 4 t t)
   :ok)
 
 (rtest:deftest :ub64ref/be
-  (ref-test #'nibbles:ub64ref/be 8 nil t)
+  (ref-test 'nibbles:ub64ref/be 8 nil t)
   :ok)
 
 (rtest:deftest :sb64ref/be
-  (ref-test #'nibbles:sb64ref/be 8 t t)
+  (ref-test 'nibbles:sb64ref/be 8 t t)
   :ok)
 
 ;;; Big-endian set tests
@@ -149,27 +149,27 @@
 ;;; Little-endian integer ref tests
 
 (rtest:deftest :ub16ref/le
-  (ref-test #'nibbles:ub16ref/le 2 nil nil)
+  (ref-test 'nibbles:ub16ref/le 2 nil nil)
   :ok)
 
 (rtest:deftest :sb16ref/le
-  (ref-test #'nibbles:sb16ref/le 2 t nil)
+  (ref-test 'nibbles:sb16ref/le 2 t nil)
   :ok)
 
 (rtest:deftest :ub32ref/le
-  (ref-test #'nibbles:ub32ref/le 4 nil nil)
+  (ref-test 'nibbles:ub32ref/le 4 nil nil)
   :ok)
 
 (rtest:deftest :sb32ref/le
-  (ref-test #'nibbles:sb32ref/le 4 t nil)
+  (ref-test 'nibbles:sb32ref/le 4 t nil)
   :ok)
 
 (rtest:deftest :ub64ref/le
-  (ref-test #'nibbles:ub64ref/le 8 nil nil)
+  (ref-test 'nibbles:ub64ref/le 8 nil nil)
   :ok)
 
 (rtest:deftest :sb64ref/le
-  (ref-test #'nibbles:sb64ref/le 8 t nil)
+  (ref-test 'nibbles:sb64ref/le 8 t nil)
   :ok)
 
 ;;; Little-endian set tests
