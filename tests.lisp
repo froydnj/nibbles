@@ -330,6 +330,7 @@
               do (file-position stream i)
                  (funcall writer (aref expected-values i) stream)))
       (let ((file-contents (read-file-as-octets tmpfile)))
+        (delete-file tmpfile)
         (if (mismatch byte-vector file-contents)
             :bad
             :ok)))))
