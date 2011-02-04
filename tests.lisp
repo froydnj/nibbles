@@ -50,19 +50,34 @@
                     aggregate))
           (incf j))))))
 
+(defun compile-quietly (form)
+  (handler-bind ((style-warning #'muffle-warning)
+                 #+sbcl (sb-ext:compiler-note #'muffle-warning))
+    (compile nil form)))
+
 (defun ref-test (reffer ref-size signedp big-endian-p
                  &optional (n-octets 4096))
   (multiple-value-bind (byte-vector expected-vector)
       (generate-random-test ref-size signedp big-endian-p n-octets)
-    (loop for i from 0 below n-octets
-          for j from 0
-          do (let ((reffed-val (funcall reffer byte-vector i))
-                   (expected-val (aref expected-vector j)))
-               (unless (= reffed-val expected-val)
-                 (error "wanted ~D, got ~D from ~A"
-                        expected-val reffed-val
-                        (subseq byte-vector i (+ i ref-size)))))
-          finally (return :ok))))
+    (flet ((run-test (reffer)
+             (loop for i from 0 below n-octets
+                   for j from 0
+                   do (let ((reffed-val (funcall reffer byte-vector i))
+                            (expected-val (aref expected-vector j)))
+                        (unless (= reffed-val expected-val)
+                          (error "wanted ~D, got ~D from ~A"
+                                 expected-val reffed-val
+                                 (subseq byte-vector i (+ i ref-size)))))
+                   finally (return :ok))))
+      (run-test reffer)
+      (when (typep byte-vector '(simple-array (unsigned-byte 8) (*)))
+        (let ((compiled (compile-quietly
+                           `(lambda (v i)
+                              (declare (type (simple-array (unsigned-byte 8) (*)) v))
+                              (declare (type (integer 0 #.(1- array-dimension-limit))))
+                              (declare (optimize speed (debug 0)))
+                              (,reffer v i)))))
+          (run-test compiled))))))
 
 (defun set-test (reffer set-size signedp big-endian-p
                  &optional (n-octets 4096))
