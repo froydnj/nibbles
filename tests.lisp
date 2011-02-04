@@ -27,28 +27,37 @@
                (setf buffer val))))
           (t (values 0 nil))))))
 
-(defun generate-random-test (ref-size signedp big-endian-p
-                             &optional (n-octets 4096))
+(defun generate-random-octet-vector (n-octets)
+  (loop with v = (make-array n-octets :element-type '(unsigned-byte 8))
+        for i from 0 below n-octets
+        do (setf (aref v i) (random 256))
+        finally (return v)))
+
+(defun generate-reffed-values (byte-vector ref-size signedp big-endian-p)
   (do* ((byte-kind (if signedp 'signed-byte 'unsigned-byte))
         (n-bits (* 8 ref-size))
-        (total-octets (+ n-octets (1- ref-size)))
-        (bv (make-array total-octets
-                        :element-type '(unsigned-byte 8)))
-        (ev (make-array n-octets
+        (n-values (- (length byte-vector) (1- ref-size)))
+        (ev (make-array n-values
                         :element-type `(,byte-kind ,n-bits)))
         (i 0 (1+ i))
         (j 0)
         (combiner (make-byte-combiner ref-size big-endian-p)))
-      ((>= i total-octets) (values bv ev n-octets))
-    (let ((byte (random 256)))
-      (multiple-value-bind (aggregate set-p) (funcall combiner byte)
-        (setf (aref bv i) byte)
-        (when set-p
-          (setf (aref ev j)
-                (if (and signedp (logbitp (1- n-bits) aggregate))
-                    (dpb aggregate (byte n-bits 0) -1)
-                    aggregate))
-          (incf j))))))
+      ((>= i (length byte-vector)) ev)
+    (multiple-value-bind (aggregate set-p) (funcall combiner (aref byte-vector i))
+      (when set-p
+        (setf (aref ev j)
+              (if (and signedp (logbitp (1- n-bits) aggregate))
+                  (dpb aggregate (byte n-bits 0) -1)
+                  aggregate))
+        (incf j)))))
+
+(defun generate-random-test (ref-size signedp big-endian-p
+                             &optional (n-values 4096))
+  (let* ((total-octets (+ n-values (1- ref-size)))
+         (random-octets (generate-random-octet-vector total-octets))
+         (expected-vector
+          (generate-reffed-values random-octets ref-size signedp big-endian-p)))
+    (values random-octets expected-vector)))
 
 (defun compile-quietly (form)
   (handler-bind ((style-warning #'muffle-warning)
