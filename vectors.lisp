@@ -82,7 +82,9 @@ BIG-ENDIAN-P.  The form returns VALUE-NAME."
                  (defun ,set-name (buffer index value)
                    (declare (type octet-vector buffer))
                    (declare (type (integer 0 ,(- array-dimension-limit bytes)) index))
-                   (declare (type (unsigned-byte ,bitsize) value))
+                   (declare (type (,(if signedp
+                                        'signed-byte
+                                        'unsigned-byte) ,bitsize) value))
                    (multiple-value-bind (vector start end)
                        (array-data-and-offsets buffer index (+ index ,bytes))
                      #+sbcl (declare (optimize (sb-c::insert-array-bounds-checks 0)))
