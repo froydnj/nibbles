@@ -264,7 +264,7 @@
   :ok)
 
 (rtest:deftest :read-sb16/be
-  (read-test 'nibbles:read-ub16/be 2 t t)
+  (read-test 'nibbles:read-sb16/be 2 t t)
   :ok)
 
 (rtest:deftest :read-ub32/be
@@ -272,7 +272,7 @@
   :ok)
 
 (rtest:deftest :read-sb32/be
-  (read-test 'nibbles:read-ub32/be 4 t t)
+  (read-test 'nibbles:read-sb32/be 4 t t)
   :ok)
 
 (rtest:deftest :read-ub64/be
@@ -280,7 +280,7 @@
   :ok)
 
 (rtest:deftest :read-sb64/be
-  (read-test 'nibbles:read-ub64/be 8 t t)
+  (read-test 'nibbles:read-sb64/be 8 t t)
   :ok)
 
 (rtest:deftest :read-ub16/le
@@ -288,7 +288,7 @@
   :ok)
 
 (rtest:deftest :read-sb16/le
-  (read-test 'nibbles:read-ub16/le 2 t nil)
+  (read-test 'nibbles:read-sb16/le 2 t nil)
   :ok)
 
 (rtest:deftest :read-ub32/le
@@ -296,7 +296,7 @@
   :ok)
 
 (rtest:deftest :read-sb32/le
-  (read-test 'nibbles:read-ub32/le 4 t nil)
+  (read-test 'nibbles:read-sb32/le 4 t nil)
   :ok)
 
 (rtest:deftest :read-ub64/le
@@ -304,5 +304,5 @@
   :ok)
 
 (rtest:deftest :read-sb64/le
-  (read-test 'nibbles:read-ub64/le 8 t nil)
+  (read-test 'nibbles:read-sb64/le 8 t nil)
   :ok)
