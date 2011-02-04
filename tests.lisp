@@ -64,20 +64,31 @@
                         (subseq byte-vector i (+ i ref-size)))))
           finally (return :ok))))
 
-(defun set-test (setter set-size signedp big-endian-p
+(defun set-test (reffer set-size signedp big-endian-p
                  &optional (n-octets 4096))
-  (multiple-value-bind (byte-vector expected-vector)
-      (generate-random-test set-size signedp big-endian-p n-octets)
-    (loop with fill-vec = (let ((v (copy-seq byte-vector)))
-                            (fill v 0)
-                            v)
-          for i from 0 below n-octets
-          for j from 0
-          do (funcall setter fill-vec i (aref expected-vector j))
-          finally (return
-                    (if (mismatch fill-vec byte-vector)
-                        (error "wanted ~A, got ~A" byte-vector fill-vec)
-                        :ok)))))
+  ;; We use GET-SETF-EXPANSION to avoid reaching too deeply into
+  ;; internals.  This bit relies on knowing that the writer-form will be
+  ;; a simple function call whose CAR is the internal setter, but I
+  ;; think that's a bit better than :: references everywhere.
+  (multiple-value-bind (vars vals store-vars writer-form reader-form)
+      (get-setf-expansion `(,reffer x i))
+    (declare (ignore vars vals store-vars reader-form))
+    (let ((setter (car writer-form)))
+      ;; Sanity check.
+      (unless (eq (symbol-package setter) (find-package :nibbles))
+        (error "need to update setter tests!"))
+      (multiple-value-bind (byte-vector expected-vector)
+          (generate-random-test set-size signedp big-endian-p n-octets)
+        (loop with fill-vec = (let ((v (copy-seq byte-vector)))
+                                (fill v 0)
+                                v)
+              for i from 0 below n-octets
+              for j from 0
+              do (funcall setter fill-vec i (aref expected-vector j))
+              finally (return
+                        (if (mismatch fill-vec byte-vector)
+                            (error "wanted ~A, got ~A" byte-vector fill-vec)
+                            :ok)))))))
 
 ;;; Big-endian integer ref tests
 
@@ -112,27 +123,27 @@
 ;;; if we didn't have to do this.
 
 (rtest:deftest :ub16set/be
-  (set-test #'nibbles::ub16set/be 2 nil t)
+  (set-test 'nibbles:ub16ref/be 2 nil t)
   :ok)
 
 (rtest:deftest :sb16set/be
-  (set-test #'nibbles::sb16set/be 2 t t)
+  (set-test 'nibbles:sb16ref/be 2 t t)
   :ok)
 
 (rtest:deftest :ub32set/be
-  (set-test #'nibbles::ub32set/be 4 nil t)
+  (set-test 'nibbles:ub32ref/be 4 nil t)
   :ok)
 
 (rtest:deftest :sb32set/be
-  (set-test #'nibbles::sb32set/be 4 t t)
+  (set-test 'nibbles:sb32ref/be 4 t t)
   :ok)
 
 (rtest:deftest :ub64set/be
-  (set-test #'nibbles::ub64set/be 8 nil t)
+  (set-test 'nibbles:ub64ref/be 8 nil t)
   :ok)
 
 (rtest:deftest :sb64set/be
-  (set-test #'nibbles::sb64set/be 8 t t)
+  (set-test 'nibbles:sb64ref/be 8 t t)
   :ok)
 
 ;;; Little-endian integer ref tests
@@ -164,25 +175,25 @@
 ;;; Little-endian set tests
 
 (rtest:deftest :ub16set/le
-  (set-test #'nibbles::ub16set/le 2 nil nil)
+  (set-test 'nibbles:ub16ref/le 2 nil nil)
   :ok)
 
 (rtest:deftest :sb16set/le
-  (set-test #'nibbles::sb16set/le 2 t nil)
+  (set-test 'nibbles:sb16ref/le 2 t nil)
   :ok)
 
 (rtest:deftest :ub32set/le
-  (set-test #'nibbles::ub32set/le 4 nil nil)
+  (set-test 'nibbles:ub32ref/le 4 nil nil)
   :ok)
 
 (rtest:deftest :sb32set/le
-  (set-test #'nibbles::sb32set/le 4 t nil)
+  (set-test 'nibbles:sb32ref/le 4 t nil)
   :ok)
 
 (rtest:deftest :ub64set/le
-  (set-test #'nibbles::ub64set/le 8 nil nil)
+  (set-test 'nibbles:ub64ref/le 8 nil nil)
   :ok)
 
 (rtest:deftest :sb64set/le
-  (set-test #'nibbles::sb64set/le 8 t nil)
+  (set-test 'nibbles:sb64ref/le 8 t nil)
   :ok)
