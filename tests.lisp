@@ -233,3 +233,76 @@
 (rtest:deftest :sb64set/le
   (set-test 'nibbles:sb64ref/le 8 t nil)
   :ok)
+
+;;; Stream reading tests
+
+(defun read-file-as-octets (pathname)
+  (with-open-file (stream pathname :direction :input
+                          :element-type '(unsigned-byte 8))
+    (let ((v (make-array (file-length stream) :element-type '(unsigned-byte 8))))
+      (read-sequence v stream)
+      v)))
+
+(defun read-test (reader ref-size signedp big-endian-p)
+  (let* ((pathname #.*compile-file-pathname*)
+         (file-contents (read-file-as-octets pathname))
+         (expected-values (generate-reffed-values file-contents ref-size
+                                                  signedp big-endian-p)))
+    (with-open-file (stream pathname :direction :input
+                            :element-type '(unsigned-byte 8))
+      (loop with n-values = (length expected-values)
+            for i from 0 below n-values
+            do (file-position stream i)
+               (let ((read-value (funcall reader stream))
+                     (expected-value (aref expected-values i)))
+                 (unless (= read-value expected-value)
+                   (return :bad)))
+            finally (return :ok)))))
+
+(rtest:deftest :read-ub16/be
+  (read-test 'nibbles:read-ub16/be 2 nil t)
+  :ok)
+
+(rtest:deftest :read-sb16/be
+  (read-test 'nibbles:read-ub16/be 2 t t)
+  :ok)
+
+(rtest:deftest :read-ub32/be
+  (read-test 'nibbles:read-ub32/be 4 nil t)
+  :ok)
+
+(rtest:deftest :read-sb32/be
+  (read-test 'nibbles:read-ub32/be 4 t t)
+  :ok)
+
+(rtest:deftest :read-ub64/be
+  (read-test 'nibbles:read-ub64/be 8 nil t)
+  :ok)
+
+(rtest:deftest :read-sb64/be
+  (read-test 'nibbles:read-ub64/be 8 t t)
+  :ok)
+
+(rtest:deftest :read-ub16/le
+  (read-test 'nibbles:read-ub16/le 2 nil nil)
+  :ok)
+
+(rtest:deftest :read-sb16/le
+  (read-test 'nibbles:read-ub16/le 2 t nil)
+  :ok)
+
+(rtest:deftest :read-ub32/le
+  (read-test 'nibbles:read-ub32/le 4 nil nil)
+  :ok)
+
+(rtest:deftest :read-sb32/le
+  (read-test 'nibbles:read-ub32/le 4 t nil)
+  :ok)
+
+(rtest:deftest :read-ub64/le
+  (read-test 'nibbles:read-ub64/le 8 nil nil)
+  :ok)
+
+(rtest:deftest :read-sb64/le
+  (read-test 'nibbles:read-ub64/le 8 t nil)
+  :ok)
