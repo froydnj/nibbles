@@ -236,6 +236,8 @@
 
 ;;; Stream reading tests
 
+(defvar *path* #.*compile-file-truename*)
+
 (defun read-file-as-octets (pathname)
   (with-open-file (stream pathname :direction :input
                           :element-type '(unsigned-byte 8))
@@ -244,7 +246,7 @@
       v)))
 
 (defun read-test (reader ref-size signedp big-endian-p)
-  (let* ((pathname #.*compile-file-pathname*)
+  (let* ((pathname *path*)
          (file-contents (read-file-as-octets pathname))
          (expected-values (generate-reffed-values file-contents ref-size
                                                   signedp big-endian-p)))
@@ -305,4 +307,77 @@
 
 (rtest:deftest :read-sb64/le
   (read-test 'nibbles:read-sb64/le 8 t nil)
+  :ok)
+
+;;; Stream writing tests
+
+(defvar *output-directory*
+  (merge-pathnames (make-pathname :name nil :type nil
+                                  :directory '(:relative "test-output"))
+                   (make-pathname :directory (pathname-directory *path*))))
+
+(defun write-test (writer ref-size signedp big-endian-p)
+  (multiple-value-bind (byte-vector expected-values)
+      (generate-random-test ref-size signedp big-endian-p)
+    (let ((tmpfile (make-pathname :name "tmp" :defaults *output-directory*)))
+      (ensure-directories-exist tmpfile)
+      (with-open-file (stream tmpfile :direction :output
+                              :element-type '(unsigned-byte 8)
+                              :if-does-not-exist :create
+                              :if-exists :supersede)
+        (loop with n-values = (length expected-values)
+              for i from 0 below n-values
+              do (file-position stream i)
+                 (funcall writer (aref expected-values i) stream)))
+      (let ((file-contents (read-file-as-octets tmpfile)))
+        (if (mismatch byte-vector file-contents)
+            :bad
+            :ok)))))
+
+(rtest:deftest :write-ub16/be
+  (write-test 'nibbles:write-ub16/be 2 nil t)
+  :ok)
+
+(rtest:deftest :write-sb16/be
+  (write-test 'nibbles:write-sb16/be 2 t t)
+  :ok)
+
+(rtest:deftest :write-ub32/be
+  (write-test 'nibbles:write-ub32/be 4 nil t)
+  :ok)
+
+(rtest:deftest :write-sb32/be
+  (write-test 'nibbles:write-sb32/be 4 t t)
+  :ok)
+
+(rtest:deftest :write-ub64/be
+  (write-test 'nibbles:write-ub64/be 8 nil t)
+  :ok)
+
+(rtest:deftest :write-sb64/be
+  (write-test 'nibbles:write-sb64/be 8 t t)
+  :ok)
+
+(rtest:deftest :write-ub16/le
+  (write-test 'nibbles:write-ub16/le 2 nil nil)
+  :ok)
+
+(rtest:deftest :write-sb16/le
+  (write-test 'nibbles:write-sb16/le 2 t nil)
+  :ok)
+
+(rtest:deftest :write-ub32/le
+  (write-test 'nibbles:write-ub32/le 4 nil nil)
+  :ok)
+
+(rtest:deftest :write-sb32/le
+  (write-test 'nibbles:write-sb32/le 4 t nil)
+  :ok)
+
+(rtest:deftest :write-ub64/le
+  (write-test 'nibbles:write-ub64/le 8 nil nil)
+  :ok)
+
+(rtest:deftest :write-sb64/le
+  (write-test 'nibbles:write-sb64/le 8 t nil)
   :ok)
