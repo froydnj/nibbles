@@ -94,16 +94,28 @@
         (error "need to update setter tests!"))
       (multiple-value-bind (byte-vector expected-vector)
           (generate-random-test set-size signedp big-endian-p n-octets)
-        (loop with fill-vec = (let ((v (copy-seq byte-vector)))
-                                (fill v 0)
-                                v)
-              for i from 0 below n-octets
-              for j from 0
-              do (funcall setter fill-vec i (aref expected-vector j))
-              finally (return
-                        (if (mismatch fill-vec byte-vector)
-                            (error "wanted ~A, got ~A" byte-vector fill-vec)
-                            :ok)))))))
+        (flet ((run-test (setter)
+                 (loop with fill-vec = (let ((v (copy-seq byte-vector)))
+                                         (fill v 0)
+                                         v)
+                       for i from 0 below n-octets
+                       for j from 0
+                       do (funcall setter fill-vec i (aref expected-vector j))
+                       finally (return
+                                 (if (mismatch fill-vec byte-vector)
+                                     (error "wanted ~A, got ~A" byte-vector fill-vec)
+                                     :ok)))))
+          (run-test setter)
+          (when (typep byte-vector '(simple-array (unsigned-byte 8) (*)))
+            (let ((compiled (compile-quietly
+                             `(lambda (v i new)
+                                (declare (type (simple-array (unsigned-byte 8) (*)) v))
+                                (declare (type (integer 0 #.(1- array-dimension-limit))))
+                                (declare (type (,(if signedp 'signed-byte 'unsigned-byte)
+                                                 ,(* set-size 8)) new))
+                                (declare (optimize speed (debug 0)))
+                                (,setter v i new)))))
+              (run-test compiled))))))))
 
 ;;; Big-endian integer ref tests
 
