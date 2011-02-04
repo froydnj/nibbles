@@ -7,11 +7,17 @@
 
 ;;; Basic tests for correctness.
 
-(defun make-byte-combiner (n-bytes)
+(defun make-byte-combiner (n-bytes big-endian-p)
   (let ((count 0)
         (buffer 0))
     #'(lambda (byte)
-        (setf buffer (logior (ash buffer 8) byte))
+        (setf buffer
+              (if big-endian-p
+                  (logior (ash buffer 8) byte)
+                  (let ((x (logior (ash byte (* 8 count)) buffer)))
+                    (if (= count n-bytes)
+                        (ash x -8)
+                        x))))
         (unless (= count n-bytes)
           (incf count))
         (cond
@@ -21,7 +27,8 @@
                (setf buffer val))))
           (t (values 0 nil))))))
 
-(defun generate-random-test (ref-size signedp &optional (n-octets 4096))
+(defun generate-random-test (ref-size signedp big-endian-p
+                             &optional (n-octets 4096))
   (do* ((byte-kind (if signedp 'signed-byte 'unsigned-byte))
         (n-bits (* 8 ref-size))
         (total-octets (+ n-octets (1- ref-size)))
@@ -31,7 +38,7 @@
                         :element-type `(,byte-kind ,n-bits)))
         (i 0 (1+ i))
         (j 0)
-        (combiner (make-byte-combiner ref-size)))
+        (combiner (make-byte-combiner ref-size big-endian-p)))
       ((>= i total-octets) (values bv ev n-octets))
     (let ((byte (random 256)))
       (multiple-value-bind (aggregate set-p) (funcall combiner byte)
@@ -43,9 +50,10 @@
                     aggregate))
           (incf j))))))
 
-(defun ref-test (reffer ref-size signedp &optional (n-octets 4096))
+(defun ref-test (reffer ref-size signedp big-endian-p
+                 &optional (n-octets 4096))
   (multiple-value-bind (byte-vector expected-vector)
-      (generate-random-test ref-size signedp n-octets)
+      (generate-random-test ref-size signedp big-endian-p n-octets)
     (loop for i from 0 below n-octets
           for j from 0
           do (let ((reffed-val (funcall reffer byte-vector i))
@@ -56,9 +64,10 @@
                         (subseq byte-vector i (+ i ref-size)))))
           finally (return :ok))))
 
-(defun set-test (setter set-size signedp &optional (n-octets 4096))
+(defun set-test (setter set-size signedp big-endian-p
+                 &optional (n-octets 4096))
   (multiple-value-bind (byte-vector expected-vector)
-      (generate-random-test set-size signedp n-octets)
+      (generate-random-test set-size signedp big-endian-p n-octets)
     (loop with fill-vec = (let ((v (copy-seq byte-vector)))
                             (fill v 0)
                             v)
@@ -73,27 +82,27 @@
 ;;; Big-endian integer ref tests
 
 (rtest:deftest :ub16ref/be
-  (ref-test #'nibbles:ub16ref/be 2 nil)
+  (ref-test #'nibbles:ub16ref/be 2 nil t)
   :ok)
 
 (rtest:deftest :sb16ref/be
-  (ref-test #'nibbles:sb16ref/be 2 t)
+  (ref-test #'nibbles:sb16ref/be 2 t t)
   :ok)
 
 (rtest:deftest :ub32ref/be
-  (ref-test #'nibbles:ub32ref/be 4 nil)
+  (ref-test #'nibbles:ub32ref/be 4 nil t)
   :ok)
 
 (rtest:deftest :sb32ref/be
-  (ref-test #'nibbles:sb32ref/be 4 t)
+  (ref-test #'nibbles:sb32ref/be 4 t t)
   :ok)
 
 (rtest:deftest :ub64ref/be
-  (ref-test #'nibbles:ub64ref/be 8 nil)
+  (ref-test #'nibbles:ub64ref/be 8 nil t)
   :ok)
 
 (rtest:deftest :sb64ref/be
-  (ref-test #'nibbles:sb64ref/be 8 t)
+  (ref-test #'nibbles:sb64ref/be 8 t t)
   :ok)
 
 ;;; Big-endian set tests
@@ -103,25 +112,77 @@
 ;;; if we didn't have to do this.
 
 (rtest:deftest :ub16set/be
-  (set-test #'nibbles::ub16set/be 2 nil)
+  (set-test #'nibbles::ub16set/be 2 nil t)
   :ok)
 
 (rtest:deftest :sb16set/be
-  (set-test #'nibbles::sb16set/be 2 t)
+  (set-test #'nibbles::sb16set/be 2 t t)
   :ok)
 
 (rtest:deftest :ub32set/be
-  (set-test #'nibbles::ub32set/be 4 nil)
+  (set-test #'nibbles::ub32set/be 4 nil t)
   :ok)
 
 (rtest:deftest :sb32set/be
-  (set-test #'nibbles::sb32set/be 4 t)
+  (set-test #'nibbles::sb32set/be 4 t t)
   :ok)
 
 (rtest:deftest :ub64set/be
-  (set-test #'nibbles::ub64set/be 8 nil)
+  (set-test #'nibbles::ub64set/be 8 nil t)
   :ok)
 
 (rtest:deftest :sb64set/be
-  (set-test #'nibbles::sb64set/be 8 t)
+  (set-test #'nibbles::sb64set/be 8 t t)
+  :ok)
+
+;;; Little-endian integer ref tests
+
+(rtest:deftest :ub16ref/le
+  (ref-test #'nibbles:ub16ref/le 2 nil nil)
+  :ok)
+
+(rtest:deftest :sb16ref/le
+  (ref-test #'nibbles:sb16ref/le 2 t nil)
+  :ok)
+
+(rtest:deftest :ub32ref/le
+  (ref-test #'nibbles:ub32ref/le 4 nil nil)
+  :ok)
+
+(rtest:deftest :sb32ref/le
+  (ref-test #'nibbles:sb32ref/le 4 t nil)
+  :ok)
+
+(rtest:deftest :ub64ref/le
+  (ref-test #'nibbles:ub64ref/le 8 nil nil)
+  :ok)
+
+(rtest:deftest :sb64ref/le
+  (ref-test #'nibbles:sb64ref/le 8 t nil)
+  :ok)
+
+;;; Little-endian set tests
+
+(rtest:deftest :ub16set/le
+  (set-test #'nibbles::ub16set/le 2 nil nil)
+  :ok)
+
+(rtest:deftest :sb16set/le
+  (set-test #'nibbles::sb16set/le 2 t nil)
+  :ok)
+
+(rtest:deftest :ub32set/le
+  (set-test #'nibbles::ub32set/le 4 nil nil)
+  :ok)
+
+(rtest:deftest :sb32set/le
+  (set-test #'nibbles::sb32set/le 4 t nil)
+  :ok)
+
+(rtest:deftest :ub64set/le
+  (set-test #'nibbles::ub64set/le 8 nil nil)
+  :ok)
+
+(rtest:deftest :sb64set/le
+  (set-test #'nibbles::sb64set/le 8 t nil)
   :ok)
