@@ -51,8 +51,10 @@
                   aggregate))
         (incf j)))))
 
+(defvar *default-n-values* 4096)
+
 (defun generate-random-test (ref-size signedp big-endian-p
-                             &optional (n-values 4096))
+                             &optional (n-values *default-n-values*))
   (let* ((total-octets (+ n-values (1- ref-size)))
          (random-octets (generate-random-octet-vector total-octets))
          (expected-vector
@@ -65,7 +67,7 @@
     (compile nil form)))
 
 (defun ref-test (reffer ref-size signedp big-endian-p
-                 &optional (n-octets 4096))
+                 &optional (n-octets *default-n-values*))
   (multiple-value-bind (byte-vector expected-vector)
       (generate-random-test ref-size signedp big-endian-p n-octets)
     (flet ((run-test (reffer)
@@ -89,7 +91,7 @@
           (run-test compiled))))))
 
 (defun set-test (reffer set-size signedp big-endian-p
-                 &optional (n-octets 4096))
+                 &optional (n-octets *default-n-values*))
   ;; We use GET-SETF-EXPANSION to avoid reaching too deeply into
   ;; internals.  This bit relies on knowing that the writer-form will be
   ;; a simple function call whose CAR is the internal setter, but I
