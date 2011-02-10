@@ -5,8 +5,14 @@
 
 (cl:in-package :nibbles-system)
 
+(defclass txt-file (asdf:doc-file) ())
+(defclass css-file (asdf:doc-file) ())
+
+(defmethod asdf:source-file-type ((c txt-file) (s asdf:module)) "txt")
+(defmethod asdf:source-file-type ((c css-file) (s asdf:module)) "css")
+
 (asdf:defsystem :nibbles
-  :version "0.1"
+  :version "0.9"
   :author "Nathan Froyd <froydnj@gmail.com>"
   :maintainer "Nathan Froyd <froydnj@gmail.com>"
   :description "A library for accessing octet-addressed blocks of data"
@@ -18,6 +24,11 @@
                (:file "vectors" :depends-on ("types")
                       :in-order-to ((asdf:compile-op (asdf:load-op "macro-utils"))))
                (:file "streams" :depends-on ("vectors"))
+	       (:module "doc"
+			:components
+			((:html-file "index")
+			 (:txt-file "nibbles-doc")
+			 (:css-file "style")))
                (:module "sbcl-opt"
                         :depends-on ("package" "macro-utils")
                         :if-component-dep-fails :ignore
