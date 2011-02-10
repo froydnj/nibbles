@@ -157,10 +157,6 @@
   :ok)
 
 ;;; Big-endian set tests
-;;;
-;;; FIXME: DEFSETF doesn't automagically define SETF functions, so we
-;;; have to reach into internals to do these tests.  It would be ideal
-;;; if we didn't have to do this.
 
 (rtest:deftest :ub16set/be
   (set-test 'nibbles:ub16ref/be 16 nil t)
