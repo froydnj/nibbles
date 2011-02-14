@@ -12,6 +12,13 @@
   (:export #:read-ub16/le #:read-ub16/be #:read-sb16/be #:read-sb16/le
            #:read-ub32/le #:read-ub32/be #:read-sb32/be #:read-sb32/le
            #:read-ub64/le #:read-ub64/be #:read-sb64/be #:read-sb64/le)
+  ;; Stream readers for vectors.
+  (:export #:read-ub16/le-vector #:read-ub16/be-vector
+	   #:read-sb16/le-vector #:read-sb16/le-vector
+	   #:read-ub32/le-vector #:read-ub32/be-vector
+	   #:read-sb32/le-vector #:read-sb32/be-vector
+	   #:read-ub64/le-vector #:read-ub64/be-vector
+	   #:read-sb64/le-vector #:read-sb64/be-vector)
   ;; Stream writers.
   (:export #:write-ub16/le #:write-ub16/be #:write-sb16/be #:write-sb16/le
            #:write-ub32/le #:write-ub32/be #:write-sb32/be #:write-sb32/le

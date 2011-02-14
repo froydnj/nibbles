@@ -24,6 +24,16 @@
     (write-sequence v stream)
     integer))
 
+(declaim (inline read-into-vector*))
+(defun read-into-vector* (stream vector start end n-bytes reffer)
+  (declare (type function reffer))
+  (let ((v (make-array n-bytes :element-type '(unsigned-byte 8))))
+    (declare (dynamic-extent v))
+    (loop for i from start below end
+	  do (read-n-bytes-into stream n-bytes v)
+	     (setf (aref vector i) (funcall reffer v 0))
+	  finally (return vector))))
+
 #.(loop for i from 0 upto #b10111
         for bitsize = (ecase (ldb (byte 2 3) i)
                         (0 16)
@@ -37,8 +47,16 @@
 	for byte-fun = (if readp
 			   (byte-ref-fun-name bitsize signedp big-endian-p)
 			   (byte-set-fun-name bitsize signedp big-endian-p))
-	for arglist = (if readp '(stream) '(integer stream))
+	for byte-arglist = (if readp '(stream) '(integer stream))
 	for subfun = (if readp 'read-byte* 'write-byte*)
-        collect `(defun ,name ,arglist
-		   (,subfun ,@arglist ,n-bytes #',byte-fun)) into forms
+	for element-type = `(,(if signedp 'signed-byte 'unsigned-byte) ,bitsize)
+        collect `(defun ,name ,byte-arglist
+		   (,subfun ,@byte-arglist ,n-bytes #',byte-fun)) into forms
+	if readp
+	  collect `(defun ,(stream-vector-fun-name bitsize t signedp big-endian-p)
+		       (stream n-elements)
+		     (let ((vector (make-array n-elements
+					       :element-type ',element-type)))
+		       (read-into-vector* stream vector 0 n-elements
+					  ,n-bytes #',byte-fun))) into forms
         finally (return `(progn ,@forms)))
