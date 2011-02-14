@@ -2,16 +2,20 @@
 
 (cl:in-package :nibbles)
 
-(declaim (inline read-byte* write-byte*))
-(defun read-byte* (stream n-bytes reffer)
-  (let ((v (make-array n-bytes :element-type '(unsigned-byte 8))))
-    (declare (dynamic-extent v))
+(defun read-n-bytes-into (stream n-bytes v)
+  (dotimes (i n-bytes v)
     ;; READ-SEQUENCE would likely be more efficient here, but it does
     ;; not have the semantics we want--in particular, the blocking
     ;; semantics of READ-SEQUENCE are potentially bad.  It's not clear
     ;; that READ-BYTE is any better here, though...
-    (dotimes (i n-bytes (funcall reffer v 0))
-      (setf (aref v i) (read-byte stream)))))
+    (setf (aref v i) (read-byte stream))))
+
+(declaim (inline read-byte* write-byte*))
+(defun read-byte* (stream n-bytes reffer)
+  (let ((v (make-array n-bytes :element-type '(unsigned-byte 8))))
+    (declare (dynamic-extent v))
+    (read-n-bytes-into stream n-bytes v)
+    (funcall reffer v 0)))
 
 (defun write-byte* (integer stream n-bytes setter)
   (let ((v (make-array n-bytes :element-type '(unsigned-byte 8))))
