@@ -2,6 +2,25 @@
 
 (cl:in-package :nibbles)
 
+(sb-c:deftransform %check-bound ((vector bound offset n-bytes)
+				 ((simple-array (unsigned-byte 8) (*)) index
+				  (and fixnum sb-vm:word)
+				  (member 2 4 8 16))
+				 * :node node)
+  "optimize away bounds check"
+  ;; cf. sb-c::%check-bound transform
+  (cond ((sb-c:policy node (= sb-c::insert-array-bounds-checks 0))
+	 'offset)
+	((not (sb-c::constant-lvar-p bound))
+	 (sb-c::give-up-ir1-transform))
+	(t
+	 (let* ((dim (sb-c::lvar-value bound))
+		(n-bytes (sb-c::lvar-value n-bytes))
+		(upper-bound `(integer 0 (,(- dim n-bytes -1)))))
+	   (if (> n-bytes dim)
+	       (sb-c::give-up-ir1-transform)
+	       `(the ,upper-bound offset))))))
+
 #.(flet ((specialized-includep (bitsize signedp setterp)
            (declare (ignorable bitsize signedp setterp))
            ;; Bleh.  No good way to solve this atm.
