@@ -14,14 +14,14 @@
            #:read-ub64/le #:read-ub64/be #:read-sb64/be #:read-sb64/le)
   ;; Stream readers for vectors.
   (:export #:read-ub16/le-vector #:read-ub16/be-vector
-	   #:read-sb16/le-vector #:read-sb16/le-vector
+	   #:read-sb16/le-vector #:read-sb16/be-vector
 	   #:read-ub32/le-vector #:read-ub32/be-vector
 	   #:read-sb32/le-vector #:read-sb32/be-vector
 	   #:read-ub64/le-vector #:read-ub64/be-vector
 	   #:read-sb64/le-vector #:read-sb64/be-vector)
   ;; Non-consing variants akin to READ-SEQUENCE.
   (:export #:read-into-ub16/le-vector #:read-into-ub16/be-vector
-	   #:read-into-sb16/le-vector #:read-into-sb16/le-vector
+	   #:read-into-sb16/le-vector #:read-into-sb16/be-vector
 	   #:read-into-ub32/le-vector #:read-into-ub32/be-vector
 	   #:read-into-sb32/le-vector #:read-into-sb32/be-vector
 	   #:read-into-ub64/le-vector #:read-into-ub64/be-vector
@@ -32,7 +32,7 @@
            #:write-ub64/le #:write-ub64/be #:write-sb64/be #:write-sb64/le)
   ;; Stream writers for vectors.
   (:export #:write-ub16/le-vector #:write-ub16/be-vector
-	   #:write-sb16/le-vector #:write-sb16/le-vector
+	   #:write-sb16/le-vector #:write-sb16/be-vector
 	   #:write-ub32/le-vector #:write-ub32/be-vector
 	   #:write-sb32/le-vector #:write-sb32/be-vector
 	   #:write-ub64/le-vector #:write-ub64/be-vector
