@@ -33,22 +33,31 @@
         do (setf (aref v i) (random 256))
         finally (return v)))
 
-(defun generate-reffed-values (byte-vector bitsize signedp big-endian-p)
+(defun generate-reffed-values (byte-vector bitsize signedp big-endian-p
+			       &optional (rolling-p t))
   (do* ((byte-kind (if signedp 'signed-byte 'unsigned-byte))
         (bytesize (truncate bitsize 8))
-        (n-values (- (length byte-vector) (1- bytesize)))
+	(n-bytes-to-read (if rolling-p
+			     (length byte-vector)
+			     (* (floor (length byte-vector) bytesize)
+				bytesize)))
+        (n-values (if rolling-p
+		      (- (length byte-vector) (1- bytesize))
+		      (truncate n-bytes-to-read bytesize)))
         (ev (make-array n-values
                         :element-type `(,byte-kind ,bitsize)))
         (i 0 (1+ i))
         (j 0)
         (combiner (make-byte-combiner bytesize big-endian-p)))
-      ((>= i (length byte-vector)) ev)
+      ((>= i n-bytes-to-read) ev)
     (multiple-value-bind (aggregate set-p) (funcall combiner (aref byte-vector i))
       (when set-p
         (setf (aref ev j)
               (if (and signedp (logbitp (1- bitsize) aggregate))
                   (dpb aggregate (byte bitsize 0) -1)
                   aggregate))
+	(unless rolling-p
+	  (setf combiner (make-byte-combiner bytesize big-endian-p)))
         (incf j)))))
 
 (defvar *default-n-values* 4096)
@@ -261,6 +270,20 @@
                    (return :bad)))
             finally (return :ok)))))
 
+(defun read-vector-test (reader bitsize signedp big-endian-p)
+  (let* ((pathname *path*)
+	 (file-contents (subseq (read-file-as-octets pathname) 0 8))
+	 (expected-values (generate-reffed-values file-contents bitsize
+						  signedp big-endian-p nil)))
+    (with-open-file (stream pathname :direction :input
+			    :element-type '(unsigned-byte 8))
+      (let* ((n-values (truncate (length file-contents)
+				 (truncate bitsize 8)))
+	     (read-values (funcall reader stream n-values)))
+	(if (mismatch read-values expected-values)
+	    :bad
+	    :ok)))))
+
 (rtest:deftest :read-ub16/be
   (read-test 'nibbles:read-ub16/be 16 nil t)
   :ok)
@@ -307,6 +330,54 @@
 
 (rtest:deftest :read-sb64/le
   (read-test 'nibbles:read-sb64/le 64 t nil)
+  :ok)
+
+(rtest:deftest :read-ub16/be-vector
+  (read-vector-test 'nibbles:read-ub16/be-vector 16 nil t)
+  :ok)
+
+(rtest:deftest :read-sb16/be-vector
+  (read-vector-test 'nibbles:read-sb16/be-vector 16 t t)
+  :ok)
+
+(rtest:deftest :read-ub32/be-vector
+  (read-vector-test 'nibbles:read-ub32/be-vector 32 nil t)
+  :ok)
+
+(rtest:deftest :read-sb32/be-vector
+  (read-vector-test 'nibbles:read-sb32/be-vector 32 t t)
+  :ok)
+
+(rtest:deftest :read-ub64/be-vector
+  (read-vector-test 'nibbles:read-ub64/be-vector 64 nil t)
+  :ok)
+
+(rtest:deftest :read-sb64/be-vector
+  (read-vector-test 'nibbles:read-sb64/be-vector 64 t t)
+  :ok)
+
+(rtest:deftest :read-ub16/le-vector
+  (read-vector-test 'nibbles:read-ub16/le-vector 16 nil nil)
+  :ok)
+
+(rtest:deftest :read-sb16/le-vector
+  (read-vector-test 'nibbles:read-sb16/le-vector 16 t nil)
+  :ok)
+
+(rtest:deftest :read-ub32/le-vector
+  (read-vector-test 'nibbles:read-ub32/le-vector 32 nil nil)
+  :ok)
+
+(rtest:deftest :read-sb32/le-vector
+  (read-vector-test 'nibbles:read-sb32/le-vector 32 t nil)
+  :ok)
+
+(rtest:deftest :read-ub64/le-vector
+  (read-vector-test 'nibbles:read-ub64/le-vector 64 nil nil)
+  :ok)
+
+(rtest:deftest :read-sb64/le-vector
+  (read-vector-test 'nibbles:read-sb64/le-vector 64 t nil)
   :ok)
 
 ;;; Stream writing tests
