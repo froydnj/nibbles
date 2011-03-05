@@ -22,4 +22,11 @@
   ;; Stream writers.
   (:export #:write-ub16/le #:write-ub16/be #:write-sb16/be #:write-sb16/le
            #:write-ub32/le #:write-ub32/be #:write-sb32/be #:write-sb32/le
-           #:write-ub64/le #:write-ub64/be #:write-sb64/be #:write-sb64/le))
+           #:write-ub64/le #:write-ub64/be #:write-sb64/be #:write-sb64/le)
+  ;; Stream writers for vectors.
+  (:export #:write-ub16/le-vector #:write-ub16/be-vector
+	   #:write-sb16/le-vector #:write-sb16/le-vector
+	   #:write-ub32/le-vector #:write-ub32/be-vector
+	   #:write-sb32/le-vector #:write-sb32/be-vector
+	   #:write-ub64/le-vector #:write-ub64/be-vector
+	   #:write-sb64/le-vector #:write-sb64/be-vector))

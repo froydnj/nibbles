@@ -58,5 +58,12 @@
 		     (let ((vector (make-array n-elements
 					       :element-type ',element-type)))
 		       (read-into-vector* stream vector 0 n-elements
-					  ,n-bytes #',byte-fun))) into forms
+					  ,n-bytes #',byte-fun)))
+	else
+	  collect `(defun ,(stream-vector-fun-name bitsize nil signedp big-endian-p)
+		       (vector stream &key (start 0) end)
+		     (loop with end = (or end (length vector))
+			   for i from start below end 
+			   do (,name (aref vector i) stream)
+			   finally (return vector))) into forms
         finally (return `(progn ,@forms)))
