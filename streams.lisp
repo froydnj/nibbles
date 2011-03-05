@@ -58,7 +58,7 @@
 		     (let ((vector (make-array n-elements
 					       :element-type ',element-type)))
 		       (read-into-vector* stream vector 0 n-elements
-					  ,n-bytes #',byte-fun)))
+					  ,n-bytes #',byte-fun))) into forms
 	else
 	  collect `(defun ,(stream-vector-fun-name bitsize nil signedp big-endian-p)
 		       (vector stream &key (start 0) end)
