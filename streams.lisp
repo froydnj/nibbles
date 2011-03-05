@@ -66,4 +66,11 @@
 			   for i from start below end 
 			   do (,name (aref vector i) stream)
 			   finally (return vector))) into forms
+	if readp
+	  collect `(defun ,(intern (format nil "READ-INTO-~:[U~;S~]B~D/~:[LE~;BE~]-VECTOR"
+					   signedp bitsize big-endian-p))
+		       (vector stream &key (start 0) end)
+		     (let ((end (or end (length vector))))
+		       (read-into-vector* stream vector start (- end start)
+					  ,n-bytes #',byte-fun))) into forms
         finally (return `(progn ,@forms)))
