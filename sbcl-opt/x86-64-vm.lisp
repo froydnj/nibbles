@@ -58,7 +58,7 @@
                 (:args (vector :scs (descriptor-reg))
                        (index :scs (immediate unsigned-reg))
                        ,@(when setterp
-                           `((value :scs (,result-sc) :target result))))
+                           `((value* :scs (,result-sc) :target result))))
                 (:arg-types simple-array-unsigned-byte-8
                             positive-fixnum
                             ,@(when setterp
@@ -74,7 +74,7 @@
                                        other-pointer-lowtag))
                          (operand-size ,(if (= bitsize 32) :dword :qword))
                          ,@(when setterp
-                             '((value (reg-in-size value operand-size))))
+                             '((value (reg-in-size value* operand-size))))
                          ,@(when (and setterp big-endian-p)
                              '((temp (reg-in-size temp operand-size))))
                          (memref (sc-case index
@@ -98,7 +98,7 @@
                                      'result)
                                 memref))
                     ,@(if setterp
-                          '((move result value))
+                          '((move result value*))
                           (when big-endian-p
                             `((inst bswap
                                     ,(if (= bitsize 32)
