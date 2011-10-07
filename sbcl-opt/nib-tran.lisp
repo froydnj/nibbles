@@ -38,9 +38,9 @@
            (/= bitsize 16))
          (generic-transform-form (fun-name arglist n-bytes
                                            setterp signedp big-endian-p)
-           (let ((offset-type `(unsigned-byte 0 ,(- array-dimension-limit n-bytes))))
+           (let ((offset-type `(integer 0 ,(- array-dimension-limit n-bytes))))
            `(sb-c:deftransform ,fun-name ,arglist
-              `(locally (declare (type ,',offset-type) offset)
+              `(locally (declare (type ,',offset-type offset))
 		 ,',(if setterp
 			(set-form 'vector 'offset 'value n-bytes big-endian-p)
 			(ref-form 'vector 'offset n-bytes signedp big-endian-p)))))))
