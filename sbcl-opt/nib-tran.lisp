@@ -40,10 +40,10 @@
                                            setterp signedp big-endian-p)
            (let ((offset-type `(unsigned-byte 0 ,(- array-dimension-limit n-bytes))))
            `(sb-c:deftransform ,fun-name ,arglist
-              `(locally (declare (type ,offset-type) offset)
-                 ,(if setterp
-                      ,(set-form 'vector 'offset 'value n-bytes big-endian-p)
-                      ,(ref-form 'vector 'offset n-bytes signedp big-endian-p)))))))
+              `(locally (declare (type ,',offset-type) offset)
+		 ,',(if setterp
+			(set-form 'vector 'offset 'value n-bytes big-endian-p)
+			(ref-form 'vector 'offset n-bytes signedp big-endian-p)))))))
     (loop for i from 0 to #-x86-64 #b0111 #+x86-64 #b1011
           for bitsize = (ecase (ldb (byte 2 2) i)
                           (0 16)
