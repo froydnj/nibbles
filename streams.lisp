@@ -34,6 +34,17 @@
 	     (setf (aref vector i) (funcall reffer v 0))
 	  finally (return vector))))
 
+(defun read-into-list* (stream list start end n-bytes reffer)
+  (declare (type function reffer))
+  (do ((end (or end) (length list))
+       (v (make-array n-bytes :element-type '(unsigned-byte 8)))
+       (rem (nthcdr start list) (rest rem))
+       (i start (1+ i)))
+      ((or (endp rem) (>= i end)) list)
+    (declare (dynamic-extent v))
+    (read-n-bytes-into stream n-bytes v)
+    (setf (first rem) (funcall reffer v 0))))
+
 #.(loop for i from 0 upto #b10111
         for bitsize = (ecase (ldb (byte 2 3) i)
                         (0 16)
@@ -67,10 +78,14 @@
 			   do (,name (aref vector i) stream)
 			   finally (return vector))) into forms
 	if readp
-	  collect `(defun ,(intern (format nil "READ-INTO-~:[U~;S~]B~D/~:[LE~;BE~]-VECTOR"
+	  collect `(defun ,(intern (format nil "READ-~:[U~;S~]B~D/~:[LE~;BE~]-INTO-SEQUENCE"
 					   signedp bitsize big-endian-p))
-		       (vector stream &key (start 0) end)
-		     (let ((end (or end (length vector))))
-		       (read-into-vector* stream vector start (- end start)
-					  ,n-bytes #',byte-fun))) into forms
+		       (seq stream &key (start 0) end)
+		     (etypecase seq
+		       (list (read-into-list* stream seq start end
+					      ,n-bytes #',byte-fun))
+		       (vector
+			(let ((end (or end (length vector))))
+			  (read-into-vector* stream seq start (- end start)
+					     ,n-bytes #',byte-fun))))) into forms
         finally (return `(progn ,@forms)))
