@@ -85,7 +85,7 @@
 		       (list (read-into-list* stream seq start end
 					      ,n-bytes #',byte-fun))
 		       (vector
-			(let ((end (or end (length vector))))
+			(let ((end (or end (length seq))))
 			  (read-into-vector* stream seq start end
 					     ,n-bytes #',byte-fun))))) into forms
         finally (return `(progn ,@forms)))
