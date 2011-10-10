@@ -66,6 +66,8 @@
 	if readp
 	  collect `(defun ,(stream-seq-fun-name bitsize t signedp big-endian-p)
 		       (result-type stream count)
+		     ,(format-docstring "Return a sequence of type RESULT-TYPE, containing COUNT elements read from STREAM.  Each element is a ~D-bit ~:[un~;~]signed integer read in ~:[little~;big~]-endian order.  RESULT-TYPE must be either CL:VECTOR or CL:LIST.  STREAM must have an element type of (UNSIGNED-BYTE 8)."
+					bitsize signedp big-endian-p)
 		     (case result-type
 		       (list
 			(let ((list (make-list count)))
@@ -79,6 +81,8 @@
 	else
 	  collect `(defun ,(stream-seq-fun-name bitsize nil signedp big-endian-p)
 		       (seq stream &key (start 0) end)
+		     ,(format-docstring "Write elements from SEQ between START and END as ~D-bit ~:[un~;~]signed integers in ~:[little~;big~]-endian order to STREAM.  SEQ may be either a vector or a list.  STREAM must have an element type of (UNSIGNED-BYTE 8)."
+					bitsize signedp big-endian-p)
 		     (etypecase seq
 		       (list
 			(mapc #',name (subseq seq start end))
@@ -92,6 +96,8 @@
 	  collect `(defun ,(intern (format nil "READ-~:[U~;S~]B~D/~:[LE~;BE~]-INTO-SEQUENCE"
 					   signedp bitsize big-endian-p))
 		       (seq stream &key (start 0) end)
+		     ,(format-docstring "Destructively modifies SEQ by replacing the elements of SEQ between START and END with elements read from STREAM.  Each element is a ~D-bit ~:[un~;~]signed integer written in ~:[little~;big~]-endian order.  SEQ may be either a vector or a list.  STREAM must have an element type of (UNSIGNED-BYTE 8)."
+					bitsize signedp big-endian-p)
 		     (etypecase seq
 		       (list (read-into-list* stream seq start end
 					      ,n-bytes #',byte-fun))
