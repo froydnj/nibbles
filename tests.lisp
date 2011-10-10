@@ -279,7 +279,7 @@
 			    :element-type '(unsigned-byte 8))
       (let* ((n-values (truncate (length file-contents)
 				 (truncate bitsize 8)))
-	     (read-values (funcall reader stream n-values)))
+	     (read-values (funcall reader 'vector stream n-values)))
 	(if (mismatch read-values expected-values)
 	    :bad
 	    :ok)))))
@@ -333,51 +333,51 @@
   :ok)
 
 (rtest:deftest :read-ub16/be-vector
-  (read-vector-test 'nibbles:read-ub16/be-vector 16 nil t)
+  (read-vector-test 'nibbles:read-ub16/be-sequence 16 nil t)
   :ok)
 
 (rtest:deftest :read-sb16/be-vector
-  (read-vector-test 'nibbles:read-sb16/be-vector 16 t t)
+  (read-vector-test 'nibbles:read-sb16/be-sequence 16 t t)
   :ok)
 
 (rtest:deftest :read-ub32/be-vector
-  (read-vector-test 'nibbles:read-ub32/be-vector 32 nil t)
+  (read-vector-test 'nibbles:read-ub32/be-sequence 32 nil t)
   :ok)
 
 (rtest:deftest :read-sb32/be-vector
-  (read-vector-test 'nibbles:read-sb32/be-vector 32 t t)
+  (read-vector-test 'nibbles:read-sb32/be-sequence 32 t t)
   :ok)
 
 (rtest:deftest :read-ub64/be-vector
-  (read-vector-test 'nibbles:read-ub64/be-vector 64 nil t)
+  (read-vector-test 'nibbles:read-ub64/be-sequence 64 nil t)
   :ok)
 
 (rtest:deftest :read-sb64/be-vector
-  (read-vector-test 'nibbles:read-sb64/be-vector 64 t t)
+  (read-vector-test 'nibbles:read-sb64/be-sequence 64 t t)
   :ok)
 
 (rtest:deftest :read-ub16/le-vector
-  (read-vector-test 'nibbles:read-ub16/le-vector 16 nil nil)
+  (read-vector-test 'nibbles:read-ub16/le-sequence 16 nil nil)
   :ok)
 
 (rtest:deftest :read-sb16/le-vector
-  (read-vector-test 'nibbles:read-sb16/le-vector 16 t nil)
+  (read-vector-test 'nibbles:read-sb16/le-sequence 16 t nil)
   :ok)
 
 (rtest:deftest :read-ub32/le-vector
-  (read-vector-test 'nibbles:read-ub32/le-vector 32 nil nil)
+  (read-vector-test 'nibbles:read-ub32/le-sequence 32 nil nil)
   :ok)
 
 (rtest:deftest :read-sb32/le-vector
-  (read-vector-test 'nibbles:read-sb32/le-vector 32 t nil)
+  (read-vector-test 'nibbles:read-sb32/le-sequence 32 t nil)
   :ok)
 
 (rtest:deftest :read-ub64/le-vector
-  (read-vector-test 'nibbles:read-ub64/le-vector 64 nil nil)
+  (read-vector-test 'nibbles:read-ub64/le-sequence 64 nil nil)
   :ok)
 
 (rtest:deftest :read-sb64/le-vector
-  (read-vector-test 'nibbles:read-sb64/le-vector 64 t nil)
+  (read-vector-test 'nibbles:read-sb64/le-sequence 64 t nil)
   :ok)
 
 ;;; Stream writing tests

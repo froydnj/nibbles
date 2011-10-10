@@ -13,12 +13,12 @@
            #:read-ub32/le #:read-ub32/be #:read-sb32/be #:read-sb32/le
            #:read-ub64/le #:read-ub64/be #:read-sb64/be #:read-sb64/le)
   ;; Stream readers for vectors.
-  (:export #:read-ub16/le-vector #:read-ub16/be-vector
-	   #:read-sb16/le-vector #:read-sb16/be-vector
-	   #:read-ub32/le-vector #:read-ub32/be-vector
-	   #:read-sb32/le-vector #:read-sb32/be-vector
-	   #:read-ub64/le-vector #:read-ub64/be-vector
-	   #:read-sb64/le-vector #:read-sb64/be-vector)
+  (:export #:read-ub16/le-sequence #:read-ub16/be-sequence
+	   #:read-sb16/le-sequence #:read-sb16/be-sequence
+	   #:read-ub32/le-sequence #:read-ub32/be-sequence
+	   #:read-sb32/le-sequence #:read-sb32/be-sequence
+	   #:read-ub64/le-sequence #:read-ub64/be-sequence
+	   #:read-sb64/le-sequence #:read-sb64/be-sequence)
   ;; Non-consing variants akin to READ-SEQUENCE.
   (:export #:read-ub16/le-into-sequence #:read-ub16/be-into-sequence
 	   #:read-sb16/le-into-sequence #:read-sb16/be-into-sequence
@@ -31,9 +31,9 @@
            #:write-ub32/le #:write-ub32/be #:write-sb32/be #:write-sb32/le
            #:write-ub64/le #:write-ub64/be #:write-sb64/be #:write-sb64/le)
   ;; Stream writers for vectors.
-  (:export #:write-ub16/le-vector #:write-ub16/be-vector
-	   #:write-sb16/le-vector #:write-sb16/be-vector
-	   #:write-ub32/le-vector #:write-ub32/be-vector
-	   #:write-sb32/le-vector #:write-sb32/be-vector
-	   #:write-ub64/le-vector #:write-ub64/be-vector
-	   #:write-sb64/le-vector #:write-sb64/be-vector))
+  (:export #:write-ub16/le-sequence #:write-ub16/be-sequence
+	   #:write-sb16/le-sequence #:write-sb16/be-sequence
+	   #:write-ub32/le-sequence #:write-ub32/be-sequence
+	   #:write-sb32/le-sequence #:write-sb32/be-sequence
+	   #:write-ub64/le-sequence #:write-ub64/be-sequence
+	   #:write-sb64/le-sequence #:write-sb64/be-sequence))

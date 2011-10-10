@@ -64,19 +64,30 @@
         collect `(defun ,name ,byte-arglist
 		   (,subfun ,@byte-arglist ,n-bytes #',byte-fun)) into forms
 	if readp
-	  collect `(defun ,(stream-vector-fun-name bitsize t signedp big-endian-p)
-		       (stream n-elements)
-		     (let ((vector (make-array n-elements
-					       :element-type ',element-type)))
-		       (read-into-vector* stream vector 0 n-elements
-					  ,n-bytes #',byte-fun))) into forms
+	  collect `(defun ,(stream-seq-fun-name bitsize t signedp big-endian-p)
+		       (result-type stream count)
+		     (case result-type
+		       (list
+			(let ((list (make-list count)))
+			  (read-into-list* stream list 0 count
+					   ,n-bytes #',byte-fun)))
+		       (vector
+			(let ((vector (make-array count
+						  :element-type ',element-type)))
+			  (read-into-vector* stream vector 0 count
+					     ,n-bytes #',byte-fun))))) into forms
 	else
-	  collect `(defun ,(stream-vector-fun-name bitsize nil signedp big-endian-p)
-		       (vector stream &key (start 0) end)
-		     (loop with end = (or end (length vector))
-			   for i from start below end 
-			   do (,name (aref vector i) stream)
-			   finally (return vector))) into forms
+	  collect `(defun ,(stream-seq-fun-name bitsize nil signedp big-endian-p)
+		       (seq stream &key (start 0) end)
+		     (etypecase seq
+		       (list
+			(mapc #',name (subseq seq start end))
+			seq)
+		       (vector
+			(loop with end = (or end (length seq))
+			      for i from start below end 
+			      do (,name (aref seq i) stream)
+			      finally (return seq))))) into forms
 	if readp
 	  collect `(defun ,(intern (format nil "READ-~:[U~;S~]B~D/~:[LE~;BE~]-INTO-SEQUENCE"
 					   signedp bitsize big-endian-p))

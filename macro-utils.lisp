@@ -18,9 +18,9 @@
     (intern (format nil "~:[WRITE~;READ~]-~:[U~;S~]B~D/~:[LE~;BE~]"
                     readp signedp bitsize big-endian-p))))
 
-(defun stream-vector-fun-name (bitsize readp signedp big-endian-p)
+(defun stream-seq-fun-name (bitsize readp signedp big-endian-p)
   (let ((*package* (find-package :nibbles)))
-    (intern (format nil "~:[WRITE~;READ~]-~:[U~;S~]B~D/~:[LE~;BE~]-VECTOR"
+    (intern (format nil "~:[WRITE~;READ~]-~:[U~;S~]B~D/~:[LE~;BE~]-SEQUENCE"
 		    readp signedp bitsize big-endian-p))))
 
 (defun internalify (s)
