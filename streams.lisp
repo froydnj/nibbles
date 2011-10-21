@@ -85,7 +85,8 @@
 					bitsize signedp big-endian-p)
 		     (etypecase seq
 		       (list
-			(mapc #',name (subseq seq start end))
+			(mapc (lambda (e) (,name e stream))
+			      (subseq seq start end))
 			seq)
 		       (vector
 			(loop with end = (or end (length seq))
