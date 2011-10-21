@@ -455,6 +455,43 @@
             :bad
             :ok)))))
 
+(defun read-sequence-from-file (filename seq-type reader n-values)
+  (with-open-file (stream filename :direction :input
+			  :element-type '(unsigned-byte 8)
+			  :if-does-not-exist :error)
+    (funcall reader seq-type stream n-values)))
+
+(defun write-sequence-test (seq-type reader writer
+			    bitsize signedp big-endian-p)
+  (declare (optimize (debug 3)))
+  (multiple-value-bind (byte-vector expected-values)
+      (generate-random-test bitsize signedp big-endian-p)
+    (let ((tmpfile (make-pathname :name "tmp" :defaults *output-directory*))
+	  (values-seq (coerce expected-values seq-type)))
+      (ensure-directories-exist tmpfile)
+      (flet ((run-random-test (values expected-start expected-end)
+	       (with-open-file (stream tmpfile :direction :output
+				       :element-type '(unsigned-byte 8)
+				       :if-does-not-exist :create
+				       :if-exists :supersede)
+		 (funcall writer values stream :start expected-start
+			  :end expected-end))
+	       (let ((file-contents (read-sequence-from-file tmpfile
+							     seq-type
+							     reader
+							     (- expected-end expected-start))))
+		 (mismatch values file-contents
+			   :start1 expected-start
+			   :end1 expected-end))))
+	(let* ((block-size (truncate (length expected-values) 4))
+	       (upper-quartile (* block-size 3)))
+	  (loop repeat (* 2 block-size)
+		when (run-random-test values-seq (random block-size)
+						 (+ upper-quartile
+						    (random block-size)))
+		  do (return :bad)
+		finally (return :ok)))))))
+
 (rtest:deftest :write-ub16/be
   (write-test 'nibbles:write-ub16/be 16 nil t)
   :ok)
@@ -501,4 +538,148 @@
 
 (rtest:deftest :write-sb64/le
   (write-test 'nibbles:write-sb64/le 64 t nil)
+  :ok)
+
+(rtest:deftest :write-ub16/be-vector 
+  (write-sequence-test 'vector
+		       'nibbles:read-ub16/be-sequence
+		       'nibbles:write-ub16/be-sequence 16 nil t)
+  :ok)
+
+(rtest:deftest :write-sb16/be-vector 
+  (write-sequence-test 'vector
+		       'nibbles:read-sb16/be-sequence
+		       'nibbles:write-sb16/be-sequence 16 t t)
+  :ok)
+
+(rtest:deftest :write-ub32/be-vector 
+  (write-sequence-test 'vector
+		       'nibbles:read-ub32/be-sequence
+		       'nibbles:write-ub32/be-sequence 32 nil t)
+  :ok)
+
+(rtest:deftest :write-sb32/be-vector 
+  (write-sequence-test 'vector
+		       'nibbles:read-sb32/be-sequence
+		       'nibbles:write-sb32/be-sequence 32 t t)
+  :ok)
+
+(rtest:deftest :write-ub64/be-vector 
+  (write-sequence-test 'vector
+		       'nibbles:read-ub64/be-sequence
+		       'nibbles:write-ub64/be-sequence 64 nil t)
+  :ok)
+
+(rtest:deftest :write-sb64/be-vector 
+  (write-sequence-test 'vector
+		       'nibbles:read-sb64/be-sequence
+		       'nibbles:write-sb64/be-sequence 64 t t)
+  :ok)
+
+(rtest:deftest :write-ub16/le-vector 
+  (write-sequence-test 'vector
+		       'nibbles:read-ub16/le-sequence
+		       'nibbles:write-ub16/le-sequence 16 nil nil)
+  :ok)
+
+(rtest:deftest :write-sb16/le-vector 
+  (write-sequence-test 'vector
+		       'nibbles:read-sb16/le-sequence
+		       'nibbles:write-sb16/le-sequence 16 t nil)
+  :ok)
+
+(rtest:deftest :write-ub32/le-vector 
+  (write-sequence-test 'vector
+		       'nibbles:read-ub32/le-sequence
+		       'nibbles:write-ub32/le-sequence 32 nil nil)
+  :ok)
+
+(rtest:deftest :write-sb32/le-vector 
+  (write-sequence-test 'vector
+		       'nibbles:read-sb32/le-sequence
+		       'nibbles:write-sb32/le-sequence 32 t nil)
+  :ok)
+
+(rtest:deftest :write-ub64/le-vector 
+  (write-sequence-test 'vector
+		       'nibbles:read-ub64/le-sequence
+		       'nibbles:write-ub64/le-sequence 64 nil nil)
+  :ok)
+
+(rtest:deftest :write-sb64/le-vector 
+  (write-sequence-test 'vector
+		       'nibbles:read-sb64/le-sequence
+		       'nibbles:write-sb64/le-sequence 64 t nil)
+  :ok)
+
+(rtest:deftest :write-ub16/be-list 
+  (write-sequence-test 'list
+		       'nibbles:read-ub16/be-sequence
+		       'nibbles:write-ub16/be-sequence 16 nil t)
+  :ok)
+
+(rtest:deftest :write-sb16/be-list 
+  (write-sequence-test 'list
+		       'nibbles:read-sb16/be-sequence
+		       'nibbles:write-sb16/be-sequence 16 t t)
+  :ok)
+
+(rtest:deftest :write-ub32/be-list 
+  (write-sequence-test 'list
+		       'nibbles:read-ub32/be-sequence
+		       'nibbles:write-ub32/be-sequence 32 nil t)
+  :ok)
+
+(rtest:deftest :write-sb32/be-list 
+  (write-sequence-test 'list
+		       'nibbles:read-sb32/be-sequence
+		       'nibbles:write-sb32/be-sequence 32 t t)
+  :ok)
+
+(rtest:deftest :write-ub64/be-list 
+  (write-sequence-test 'list
+		       'nibbles:read-ub64/be-sequence
+		       'nibbles:write-ub64/be-sequence 64 nil t)
+  :ok)
+
+(rtest:deftest :write-sb64/be-list 
+  (write-sequence-test 'list
+		       'nibbles:read-sb64/be-sequence
+		       'nibbles:write-sb64/be-sequence 64 t t)
+  :ok)
+
+(rtest:deftest :write-ub16/le-list 
+  (write-sequence-test 'list
+		       'nibbles:read-ub16/le-sequence
+		       'nibbles:write-ub16/le-sequence 16 nil nil)
+  :ok)
+
+(rtest:deftest :write-sb16/le-list 
+  (write-sequence-test 'list
+		       'nibbles:read-sb16/le-sequence
+		       'nibbles:write-sb16/le-sequence 16 t nil)
+  :ok)
+
+(rtest:deftest :write-ub32/le-list 
+  (write-sequence-test 'list
+		       'nibbles:read-ub32/le-sequence
+		       'nibbles:write-ub32/le-sequence 32 nil nil)
+  :ok)
+
+(rtest:deftest :write-sb32/le-list 
+  (write-sequence-test 'list
+		       'nibbles:read-sb32/le-sequence
+		       'nibbles:write-sb32/le-sequence 32 t nil)
+  :ok)
+
+(rtest:deftest :write-ub64/le-list 
+  (write-sequence-test 'list
+		       'nibbles:read-ub64/le-sequence
+		       'nibbles:write-ub64/le-sequence 64 nil nil)
+  :ok)
+
+(rtest:deftest :write-sb64/le-list 
+  (write-sequence-test 'list
+		       'nibbles:read-sb64/le-sequence
+		       'nibbles:write-sb64/le-sequence 64 t nil)
   :ok)
