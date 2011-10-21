@@ -270,7 +270,7 @@
                    (return :bad)))
             finally (return :ok)))))
 
-(defun read-vector-test (reader bitsize signedp big-endian-p)
+(defun read-sequence-test (result-type reader bitsize signedp big-endian-p)
   (let* ((pathname *path*)
 	 (file-contents (subseq (read-file-as-octets pathname) 0 8))
 	 (expected-values (generate-reffed-values file-contents bitsize
@@ -279,8 +279,9 @@
 			    :element-type '(unsigned-byte 8))
       (let* ((n-values (truncate (length file-contents)
 				 (truncate bitsize 8)))
-	     (read-values (funcall reader 'vector stream n-values)))
-	(if (mismatch read-values expected-values)
+	     (read-values (funcall reader result-type stream n-values)))
+	(if (or (not (typep read-values result-type))
+		(mismatch read-values expected-values))
 	    :bad
 	    :ok)))))
 
@@ -333,51 +334,99 @@
   :ok)
 
 (rtest:deftest :read-ub16/be-vector
-  (read-vector-test 'nibbles:read-ub16/be-sequence 16 nil t)
+  (read-sequence-test 'vector 'nibbles:read-ub16/be-sequence 16 nil t)
   :ok)
 
 (rtest:deftest :read-sb16/be-vector
-  (read-vector-test 'nibbles:read-sb16/be-sequence 16 t t)
+  (read-sequence-test 'vector 'nibbles:read-sb16/be-sequence 16 t t)
   :ok)
 
 (rtest:deftest :read-ub32/be-vector
-  (read-vector-test 'nibbles:read-ub32/be-sequence 32 nil t)
+  (read-sequence-test 'vector 'nibbles:read-ub32/be-sequence 32 nil t)
   :ok)
 
 (rtest:deftest :read-sb32/be-vector
-  (read-vector-test 'nibbles:read-sb32/be-sequence 32 t t)
+  (read-sequence-test 'vector 'nibbles:read-sb32/be-sequence 32 t t)
   :ok)
 
 (rtest:deftest :read-ub64/be-vector
-  (read-vector-test 'nibbles:read-ub64/be-sequence 64 nil t)
+  (read-sequence-test 'vector 'nibbles:read-ub64/be-sequence 64 nil t)
   :ok)
 
 (rtest:deftest :read-sb64/be-vector
-  (read-vector-test 'nibbles:read-sb64/be-sequence 64 t t)
+  (read-sequence-test 'vector 'nibbles:read-sb64/be-sequence 64 t t)
   :ok)
 
 (rtest:deftest :read-ub16/le-vector
-  (read-vector-test 'nibbles:read-ub16/le-sequence 16 nil nil)
+  (read-sequence-test 'vector 'nibbles:read-ub16/le-sequence 16 nil nil)
   :ok)
 
 (rtest:deftest :read-sb16/le-vector
-  (read-vector-test 'nibbles:read-sb16/le-sequence 16 t nil)
+  (read-sequence-test 'vector 'nibbles:read-sb16/le-sequence 16 t nil)
   :ok)
 
 (rtest:deftest :read-ub32/le-vector
-  (read-vector-test 'nibbles:read-ub32/le-sequence 32 nil nil)
+  (read-sequence-test 'vector 'nibbles:read-ub32/le-sequence 32 nil nil)
   :ok)
 
 (rtest:deftest :read-sb32/le-vector
-  (read-vector-test 'nibbles:read-sb32/le-sequence 32 t nil)
+  (read-sequence-test 'vector 'nibbles:read-sb32/le-sequence 32 t nil)
   :ok)
 
 (rtest:deftest :read-ub64/le-vector
-  (read-vector-test 'nibbles:read-ub64/le-sequence 64 nil nil)
+  (read-sequence-test 'vector 'nibbles:read-ub64/le-sequence 64 nil nil)
   :ok)
 
 (rtest:deftest :read-sb64/le-vector
-  (read-vector-test 'nibbles:read-sb64/le-sequence 64 t nil)
+  (read-sequence-test 'vector 'nibbles:read-sb64/le-sequence 64 t nil)
+  :ok)
+
+(rtest:deftest :read-ub16/be-list
+  (read-sequence-test 'list 'nibbles:read-ub16/be-sequence 16 nil t)
+  :ok)
+
+(rtest:deftest :read-sb16/be-list
+  (read-sequence-test 'list 'nibbles:read-sb16/be-sequence 16 t t)
+  :ok)
+
+(rtest:deftest :read-ub32/be-list
+  (read-sequence-test 'list 'nibbles:read-ub32/be-sequence 32 nil t)
+  :ok)
+
+(rtest:deftest :read-sb32/be-list
+  (read-sequence-test 'list 'nibbles:read-sb32/be-sequence 32 t t)
+  :ok)
+
+(rtest:deftest :read-ub64/be-list
+  (read-sequence-test 'list 'nibbles:read-ub64/be-sequence 64 nil t)
+  :ok)
+
+(rtest:deftest :read-sb64/be-list
+  (read-sequence-test 'list 'nibbles:read-sb64/be-sequence 64 t t)
+  :ok)
+
+(rtest:deftest :read-ub16/le-list
+  (read-sequence-test 'list 'nibbles:read-ub16/le-sequence 16 nil nil)
+  :ok)
+
+(rtest:deftest :read-sb16/le-list
+  (read-sequence-test 'list 'nibbles:read-sb16/le-sequence 16 t nil)
+  :ok)
+
+(rtest:deftest :read-ub32/le-list
+  (read-sequence-test 'list 'nibbles:read-ub32/le-sequence 32 nil nil)
+  :ok)
+
+(rtest:deftest :read-sb32/le-list
+  (read-sequence-test 'list 'nibbles:read-sb32/le-sequence 32 t nil)
+  :ok)
+
+(rtest:deftest :read-ub64/le-list
+  (read-sequence-test 'list 'nibbles:read-ub64/le-sequence 64 nil nil)
+  :ok)
+
+(rtest:deftest :read-sb64/le-list
+  (read-sequence-test 'list 'nibbles:read-sb64/le-sequence 64 t nil)
   :ok)
 
 ;;; Stream writing tests
