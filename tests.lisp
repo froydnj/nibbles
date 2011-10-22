@@ -486,12 +486,14 @@
 			   :end1 expected-end))))
 	(let* ((block-size (truncate (length expected-values) 4))
 	       (upper-quartile (* block-size 3)))
-	  (loop repeat 32
-		when (run-random-test values-seq (random block-size)
-						 (+ upper-quartile
-						    (random block-size)))
-		  do (return :bad)
-		finally (return :ok)))))))
+	  (unwind-protect
+	       (loop repeat 32
+		     when (run-random-test values-seq (random block-size)
+						      (+ upper-quartile
+							 (random block-size)))
+		       do (return :bad)
+		     finally (return :ok))
+	    (delete-file tmpfile)))))))
 
 (rtest:deftest :write-ub16/be
   (write-test 'nibbles:write-ub16/be 16 nil t)
