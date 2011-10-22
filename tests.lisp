@@ -466,6 +466,7 @@
   (declare (optimize (debug 3)))
   (multiple-value-bind (byte-vector expected-values)
       (generate-random-test bitsize signedp big-endian-p)
+    (declare (ignore byte-vector))
     (let ((tmpfile (make-pathname :name "tmp" :defaults *output-directory*))
 	  (values-seq (coerce expected-values seq-type)))
       (ensure-directories-exist tmpfile)
