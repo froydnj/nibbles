@@ -463,7 +463,6 @@
 
 (defun write-sequence-test (seq-type reader writer
 			    bitsize signedp big-endian-p)
-  (declare (optimize (debug 3)))
   (multiple-value-bind (byte-vector expected-values)
       (generate-random-test bitsize signedp big-endian-p)
     (declare (ignore byte-vector))
