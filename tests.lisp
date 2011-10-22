@@ -485,7 +485,7 @@
 			   :end1 expected-end))))
 	(let* ((block-size (truncate (length expected-values) 4))
 	       (upper-quartile (* block-size 3)))
-	  (loop repeat (* 2 block-size)
+	  (loop repeat 32
 		when (run-random-test values-seq (random block-size)
 						 (+ upper-quartile
 						    (random block-size)))
