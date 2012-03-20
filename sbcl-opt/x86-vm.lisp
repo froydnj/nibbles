@@ -59,7 +59,11 @@
                                 `(,result-type)))
                 ,@(when (or setterp big-endian-p)
                     `((:temporary (:sc unsigned-reg :offset eax-offset
-                                       :from (:argument ,(if setterp 0 2))
+                                       :from (:argument ,(if setterp
+							     (if big-endian-p
+								 '(:load 0)
+								 '(:argument 0))
+							     '(:argument 2)))
                                        :to (:result 0)) eax)))
                 (:results (result :scs (,result-sc)))
                 (:result-types ,result-type)

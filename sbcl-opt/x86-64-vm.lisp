@@ -65,7 +65,7 @@
                                 `(,result-type)))
                 ,@(when (and setterp big-endian-p)
                     `((:temporary (:sc unsigned-reg
-                                       :from (:argument ,(if setterp 0 2))
+                                       :from (:load 0)
                                        :to (:result 0)) temp)))
                 (:results (result :scs (,result-sc)))
                 (:result-types ,result-type)
