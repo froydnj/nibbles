@@ -21,8 +21,7 @@
                (:file "package")
                (:file "types" :depends-on ("package"))
                (:file "macro-utils" :depends-on ("package"))
-               (:file "vectors" :depends-on ("types")
-                      :in-order-to ((asdf:compile-op (asdf:load-op "macro-utils"))))
+               (:file "vectors" :depends-on ("types" "macro-utils"))
                (:file "streams" :depends-on ("vectors"))
 	       (:module "doc"
 			:components
