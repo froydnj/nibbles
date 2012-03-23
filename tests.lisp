@@ -45,7 +45,8 @@
 		      (- (length byte-vector) (1- bytesize))
 		      (truncate n-bytes-to-read bytesize)))
         (ev (make-array n-values
-                        :element-type `(,byte-kind ,bitsize)))
+                        :element-type `(,byte-kind ,bitsize)
+			:adjustable t))
         (i 0 (1+ i))
         (j 0)
         (combiner (make-byte-combiner bytesize big-endian-p)))
