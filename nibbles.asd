@@ -12,7 +12,7 @@
 (defmethod asdf:source-file-type ((c css-file) (s asdf:module)) "css")
 
 (asdf:defsystem :nibbles
-  :version "0.9"
+  :version "0.10"
   :author "Nathan Froyd <froydnj@gmail.com>"
   :maintainer "Nathan Froyd <froydnj@gmail.com>"
   :description "A library for accessing octet-addressed blocks of data"
