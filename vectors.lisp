@@ -144,7 +144,7 @@ BIG-ENDIAN-P.  The form returns VALUE-NAME."
   #+allegro
   (multiple-value-bind (hi lo) (excl:single-float-to-shorts value)
     (setf (ub16ref/be vector index) hi
-          (ub16ref/be vector (+ index 2) lo))
+          (ub16ref/be vector (+ index 2)) lo)
     value)
   #+lispworks
   (let* ((v (sys:make-typed-aref-vector 4)))
