@@ -171,7 +171,7 @@
   #+ccl
   (let ((upper (ub32ref/be vector index))
         (lower (ub32ref/be vector (+ index 4))))
-    (ccl::make-double-float-from-bits upper lower))
+    (ccl::double-float-from-bits upper lower))
   #-(or sbcl cmu ccl)
   (not-supported))
 
@@ -208,7 +208,7 @@
   #+ccl
   (let ((upper (ub32ref/le vector (+ index 4)))
         (lower (ub32ref/le vector index)))
-    (ccl::make-double-float-from-bits upper lower))
+    (ccl::double-float-from-bits upper lower))
   #-(or sbcl cmu ccl)
   (not-supported))
 
