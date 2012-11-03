@@ -79,7 +79,7 @@
   #-(or sbcl cmu ccl allegro lispworks)
   (not-supported))
 
-(defun (setf ieee-single-ref/be) (value vector index)
+(defun ieee-single-set/be (vector index value)
   (declare (ignorable value vector index))
   #+sbcl
   (progn
@@ -107,6 +107,7 @@
     value)
   #-(or sbcl cmu ccl allegro lispworks)
   (not-supported))
+(defsetf ieee-single-ref/be ieee-single-set/be)
 
 (defun ieee-single-ref/le (vector index)
   (declare (ignorable vector index))
@@ -129,7 +130,7 @@
   #-(or sbcl cmu ccl allegro lispworks)
   (not-supported))
 
-(defun (setf ieee-single-ref/le) (value vector index)
+(defun ieee-single-set/le (vector index value)
   (declare (ignorable value vector index))
   #+sbcl
   (progn
@@ -157,6 +158,7 @@
     value)
   #-(or sbcl cmu ccl allegro lispworks)
   (not-supported))
+(defsetf ieee-single-ref/le ieee-single-set/le)
 
 (defun ieee-double-ref/be (vector index)
   (declare (ignorable vector index))
@@ -175,7 +177,7 @@
   #-(or sbcl cmu ccl)
   (not-supported))
 
-(defun (setf ieee-double-ref/be) (value vector index)
+(defun ieee-double-set/be (vector index value)
   (declare (ignorable value vector index))
   #+sbcl
   (progn
@@ -194,6 +196,7 @@
     value)
   #-(or sbcl cmu ccl)
   (not-supported))
+(defsetf ieee-double-ref/be ieee-double-set/be)
 
 (defun ieee-double-ref/le (vector index)
   (declare (ignorable vector index))
@@ -212,7 +215,7 @@
   #-(or sbcl cmu ccl)
   (not-supported))
 
-(defun (setf ieee-double-ref/le) (value vector index)
+(defun ieee-double-set/le (vector index value)
   (declare (ignorable value vector index))
   #+sbcl
   (progn
@@ -231,3 +234,4 @@
     value)
   #-(or sbcl cmu ccl)
   (not-supported))
+(defsetf ieee-double-ref/le ieee-double-set/le)
