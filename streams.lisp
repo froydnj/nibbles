@@ -97,7 +97,7 @@
 	  collect `(defun ,(intern (format nil "READ-~:[U~;S~]B~D/~:[LE~;BE~]-INTO-SEQUENCE"
 					   signedp bitsize big-endian-p))
 		       (seq stream &key (start 0) end)
-		     ,(format-docstring "Destructively modifies SEQ by replacing the elements of SEQ between START and END with elements read from STREAM.  Each element is a ~D-bit ~:[un~;~]signed integer written in ~:[little~;big~]-endian order.  SEQ may be either a vector or a list.  STREAM must have an element type of (UNSIGNED-BYTE 8)."
+		     ,(format-docstring "Destructively modify SEQ by replacing the elements of SEQ between START and END with elements read from STREAM.  Each element is a ~D-bit ~:[un~;~]signed integer read in ~:[little~;big~]-endian order.  SEQ may be either a vector or a list.  STREAM must have an element type of (UNSIGNED-BYTE 8)."
 					bitsize signedp big-endian-p)
 		     (etypecase seq
 		       (list (read-into-list* stream seq start end
