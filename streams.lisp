@@ -68,7 +68,7 @@
 		       (result-type stream count)
 		     ,(format-docstring "Return a sequence of type RESULT-TYPE, containing COUNT elements read from STREAM.  Each element is a ~D-bit ~:[un~;~]signed integer read in ~:[little~;big~]-endian order.  RESULT-TYPE must be either CL:VECTOR or CL:LIST.  STREAM must have an element type of (UNSIGNED-BYTE 8)."
 					bitsize signedp big-endian-p)
-		     (case result-type
+		     (ecase result-type
 		       (list
 			(let ((list (make-list count)))
 			  (read-into-list* stream list 0 count
