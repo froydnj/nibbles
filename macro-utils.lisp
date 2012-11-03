@@ -7,21 +7,42 @@
     (intern (format nil "~:[U~;S~]B~D~A/~:[LE~;BE~]"
                     signedp bitsize desc big-endian-p))))
 
+(defun float-fun-name (float-type big-endian-p desc)
+  (let ((*package* (find-package :nibbles)))
+    (intern (format nil "IEEE-~A-~A/~:[LE~;BE~]"
+		    float-type desc big-endian-p))))
+
 (defun byte-ref-fun-name (bitsize signedp big-endian-p)
   (byte-fun-name bitsize signedp big-endian-p "REF"))
 
+(defun float-ref-fun-name (float-type big-endian-p)
+  (float-fun-name float-type big-endian-p "REF"))
+
 (defun byte-set-fun-name (bitsize signedp big-endian-p)
   (byte-fun-name bitsize signedp big-endian-p "SET"))
+
+(defun float-set-fun-name (float-type big-endian-p)
+  (float-fun-name float-type big-endian-p "SET"))
 
 (defun stream-ref-fun-name (bitsize readp signedp big-endian-p)
   (let ((*package* (find-package :nibbles)))
     (intern (format nil "~:[WRITE~;READ~]-~:[U~;S~]B~D/~:[LE~;BE~]"
                     readp signedp bitsize big-endian-p))))
 
+(defun stream-float-ref-fun-name (float-type readp big-endian-p)
+  (let ((*package* (find-package :nibbles)))
+    (intern (format nil "~:[WRITE~;READ~]-IEEE-~A~:[LE~;BE~]"
+		    readp float-type big-endian-p))))
+
 (defun stream-seq-fun-name (bitsize readp signedp big-endian-p)
   (let ((*package* (find-package :nibbles)))
     (intern (format nil "~:[WRITE~;READ~]-~:[U~;S~]B~D/~:[LE~;BE~]-SEQUENCE"
 		    readp signedp bitsize big-endian-p))))
+
+(defun stream-float-seq-fun-name (float-type readp big-endian-p)
+  (let ((*package* (find-package :nibbles)))
+    (intern (format nil "~:[WRITE~;READ~]-IEEE-~A/~:[LE~;BE~]-SEQUENCE"
+		    readp float-type big-endian-p))))
 
 (defun internalify (s)
   (let ((*package* (find-package :nibbles)))

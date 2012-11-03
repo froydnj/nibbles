@@ -107,3 +107,61 @@
 			  (read-into-vector* stream seq start end
 					     ,n-bytes #',byte-fun))))) into forms
         finally (return `(progn ,@forms)))
+
+#.(loop for i from 0 upto #b111
+	for float-type = (if (logbitp 2 i) 'double 'single)
+	for readp = (logbitp 1 i)
+	for big-endian-p = (logbitp 0 i)
+	for name = (stream-float-ref-fun-name float-type readp big-endian-p)
+	for n-bytes = (ecase float-type (double 8) (single 4))
+	for single-fun = (if readp
+			     (float-ref-fun-name float-type big-endian-p)
+			     (float-set-fun-name float-type big-endian-p))
+	for arglist = (if readp '(stream) '(float stream))
+	for subfun = (if readp 'read-byte* 'write-byte*)
+	for element-type = (ecase float-type (double 'double-float) (single 'single-float))
+	collect `(defun ,name ,arglist
+		   (,subfun ,@arglist ,n-bytes #',single-fun)) into forms
+	if readp
+	  collect `(defun ,(stream-float-seq-fun-name float-type t big-endian-p)
+		       (result-type stream count)
+		     ,(format-docstring "Return a sequence of type RESULT-TYPE, containing COUNT elements read from STREAM.  Each element is a ~A read in ~:[little~;big~]-endian byte order.  RESULT-TYPE must be either CL:VECTOR or CL:LIST.  STREAM must have an element type of (UNSIGNED-BYTE 8)."
+					element-type)
+		     (ecase result-type
+		       (list
+			(let ((list (make-list count)))
+			  (read-into-list* stream list 0 count
+					   ,n-bytes #',single-fun)))
+		       (vector
+			(let ((vector (make-array count
+						  :element-type ',element-type)))
+			  (read-into-vector* stream vector 0 count
+					     ,n-bytes #',single-fun))))) into forms
+	else
+	  collect `(defun ,(stream-float-seq-fun-name float-type nil big-endian-p)
+		       (seq stream &key (start 0) end)
+		     ,(format-docstring "Write elements from SEQ between START and END as ~As in ~:[little~;big~]-endian byte order to STREAM.  SEQ may be either a vector or a list.  STREAM must have an element type of (UNSIGNED-BYTE 8)."
+					element-type)
+		     (etypecase seq
+		       (list
+			(mapc (lambda (e) (,name e stream))
+			      (subseq seq start end)))
+		       (vector
+			(loop with end = (or end (length seq))
+			      for i from start below end
+			      do (,name (aref seq i) stream)
+			      finally (return seq))))) into forms
+	if readp
+	  collect `(defun ,(intern (format nil "READ-IEEE-~A/~:[LE~;BE~]-INTO-SEQUENCE"
+					   float-type big-endian-p))
+		       (seq stream &key (start 0) end)
+		     ,(format-docstring "Destructively modify SEQ by replacing the elements of SEQ between START and END with elements read from STREAM.  Each element is a ~A read in ~:[little~;big~]-endian byte order.  SEQ may be either a vector or a list.  STREAM must have na element type of (UNSIGNED-BYTE 8)."
+					element-type)
+		     (etypecase seq
+		       (list (read-into-list* stream seq start end
+					      ,n-bytes #',single-fun))
+		       (vector
+			(let ((end (or end (length seq))))
+			  (read-into-vector* stream seq start end
+					     ,n-bytes #',single-fun))))) into forms
+	finally (return `(progn ,@forms)))
