@@ -1,6 +1,9 @@
 ;;;; x86-vm.lisp -- VOP definitions for SBCL
 
+#+sbcl
 (cl:in-package :sb-vm)
+
+#+(and sbcl x86) (progn
 
 (define-vop (%check-bound)
   (:translate nibbles::%check-bound)
@@ -158,3 +161,5 @@
           for big-endian-p = (logbitp 0 i)
           collect (frob setterp signedp big-endian-p) into forms
           finally (return `(progn ,@forms))))
+
+);#+(and sbcl x86)
