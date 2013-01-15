@@ -31,7 +31,7 @@
 
 (defun stream-float-ref-fun-name (float-type readp big-endian-p)
   (let ((*package* (find-package :nibbles)))
-    (intern (format nil "~:[WRITE~;READ~]-IEEE-~A~:[LE~;BE~]"
+    (intern (format nil "~:[WRITE~;READ~]-IEEE-~A/~:[LE~;BE~]"
 		    readp float-type big-endian-p))))
 
 (defun stream-seq-fun-name (bitsize readp signedp big-endian-p)
