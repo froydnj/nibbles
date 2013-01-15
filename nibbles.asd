@@ -9,12 +9,13 @@
 (defclass css-file (asdf:doc-file) ((type :initform "css")))
 
 (asdf:defsystem :nibbles
-  :version "0.10"
+  :version "0.11"
   :author "Nathan Froyd <froydnj@gmail.com>"
   :maintainer "Nathan Froyd <froydnj@gmail.com>"
   :description "A library for accessing octet-addressed blocks of data"
   :components ((:static-file "README")
                (:static-file "LICENSE")
+               (:static-file "NEWS")
                (:file "package")
                (:file "types" :depends-on ("package"))
                (:file "macro-utils" :depends-on ("package"))

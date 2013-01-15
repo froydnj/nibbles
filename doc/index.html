@@ -3,7 +3,7 @@
 <HTML><HEAD><TITLE>nibbles</TITLE><LINK TYPE="text/css" TITLE="default" REL="stylesheet" MEDIA="screen" HREF="style.css" /></HEAD><BODY><H1>nibbles</H1><P>nibbles is a library for accessing multibyte integers from
 octet arrays and streams.  While such accessors are straightforward to
 write, nibbles aims to centralize such facilities and also
-provide optimizations for them when appropriate.</P><H2>Installation</H2><P>nibbles can be downloaded at <A HREF="http://www.method-combination.net/lisp/files/nibbles.tar.gz">http://www.method-combination.net/lisp/files/nibbles.tar.gz</A>.  The latest version is 0.9.</P><P>It comes with an ASDF system definition, so <TT>(ASDF:OOS
+provide optimizations for them when appropriate.</P><H2>Installation</H2><P>nibbles can be downloaded at <A HREF="http://www.method-combination.net/lisp/files/nibbles.tar.gz">http://www.method-combination.net/lisp/files/nibbles.tar.gz</A>.  The latest version is 0.11.</P><P>It comes with an ASDF system definition, so <TT>(ASDF:OOS
 'ASDF:LOAD-OP :NIBBLES)</TT> should be all that you need to get started.</P><H2>License</H2><P>nibbles is released under a MIT-like license; you can do pretty
 much anything you want to with the code except claim that you wrote
 it.</P><H2>Integer array accessors</H2><DIV CLASS="lisp-symbol"><A NAME="ub16ref/le"></A><TT><STRONG>ub16ref/le</STRONG> <EM>vector</EM> <EM>index</EM> =&gt; <EM>value</EM></TT><BR /><A NAME="ub32ref/le"></A><TT><STRONG>ub32ref/le</STRONG> <EM>vector</EM> <EM>index</EM> =&gt; <EM>value</EM></TT><BR /><A NAME="ub64ref/le"></A><TT><STRONG>ub64ref/le</STRONG> <EM>vector</EM> <EM>index</EM> =&gt; <EM>value</EM></TT><BR /></DIV><P>This family of functions accesses an unsigned 16-bit, 32-bit or

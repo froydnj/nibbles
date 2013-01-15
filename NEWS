@@ -1,0 +1,22 @@
+hey emacs, show me an -*- mode: outline -*-
+
+* Version 0.11, released 2013-01-14
+
+** bug fixes
+
+IEEE-DOUBLE-REF/* now works correctly on CCL.
+
+IEEE-SINGLE-REF/* now works correctly on Allegro.  (Thanks to Richard
+Billington for the bug report.)
+
+** new features
+
+MAKE-OCTET-VECTOR and OCTET-VECTOR convenience functions have been
+added, along with the OCTET, OCTET-VECTOR, and SIMPLE-OCTET-VECTOR
+types.  (Thanks to Jan Moringen.)
+
+Stream readers and writers for floats have been added, analogous to the
+existing functions for integers.  These functionsn are only supported on
+implementations which support the array accessors (SBCL, CCL, CMUCL for
+double-floats; all those including Lispworks and Allegro for
+single-floats).
