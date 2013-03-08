@@ -76,6 +76,7 @@
                   (let* ((base-disp (- (* vector-data-offset n-word-bytes)
                                        other-pointer-lowtag))
                          (operand-size ,(if (= bitsize 32) :dword :qword))
+                         (result-in-size (reg-in-size result operand-size))
                          ,@(when setterp
                              '((value (reg-in-size value* operand-size))))
                          ,@(when (and setterp big-endian-p)
@@ -88,6 +89,7 @@
                                     (make-ea operand-size
                                              :base vector :index index
                                              :disp base-disp)))))
+                    (declare (ignorable result-in-size))
                     ,@(when (and setterp big-endian-p)
                         `((inst mov temp value)
                           (inst bswap temp)))
@@ -97,7 +99,7 @@
                                                 'value))
                          `(inst ,ref-mov-insn
                                 ,(if (and big-endian-p (= bitsize 32))
-                                     '(reg-in-size result :dword)
+                                     'result-in-size
                                      'result)
                                 memref))
                     ,@(if setterp
@@ -105,10 +107,10 @@
                           (when big-endian-p
                             `((inst bswap
                                     ,(if (= bitsize 32)
-                                         '(reg-in-size result :dword)
+                                         'result-in-size
                                          'result))
                               ,(when (and (= bitsize 32) signedp)
-                                 `(inst movsx result (reg-in-size result :dword))))))))))))
+                                 `(inst movsx result result-in-size)))))))))))
     (loop for i from 0 upto #b1111
           for bitsize = (if (logbitp 3 i) 32 64)
           for setterp = (logbitp 2 i)
