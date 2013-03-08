@@ -30,14 +30,9 @@
            ;; Non-x86.  No support.
            #-(or x86 x86-64)
            nil
-           ;; x86.  Can do everything.
-           #+x86
-           t
-           ;; x86-64.  Can't do 16-bit right now.  Must verify that the
-           ;; 16-bit ROL support does the right thing for all registers
-           ;; first.
-           #+x86-64
-           (/= bitsize 16))
+           ;; x86 and x86-64.  Can do everything.
+           #+(or x86 x86-64)
+           t)
          (generic-transform-form (fun-name arglist n-bytes
                                            setterp signedp big-endian-p)
            (let ((offset-type `(integer 0 ,(- array-dimension-limit n-bytes))))

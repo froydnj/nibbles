@@ -48,71 +48,85 @@
                                      #'nibbles::byte-ref-fun-name)
                                  bitsize signedp big-endian-p))
                   (internal-name (nibbles::internalify name))
-                  (ref-mov-insn (if (= bitsize 32)
-                                    (if big-endian-p
-                                        'mov
-                                        (if signedp 'movsxd 'movzxd))
-                                    'mov))
+                  (ref-mov-insn (ecase bitsize
+                                  (16
+                                   (if big-endian-p
+                                       'movzx
+                                       (if signedp 'movsx 'movzx)))
+                                  (32
+                                   (if big-endian-p
+                                       'mov
+                                       (if signedp 'movsxd 'movzxd)))
+                                   (64 'mov)))
                   (result-sc (if signedp 'signed-reg 'unsigned-reg))
                   (result-type (if signedp 'signed-num 'unsigned-num)))
-             `(define-vop (,name)
-                (:translate ,internal-name)
-                (:policy :fast-safe)
-                (:args (vector :scs (descriptor-reg))
-                       (index :scs (immediate unsigned-reg))
-                       ,@(when setterp
-                           `((value* :scs (,result-sc) :target result))))
-                (:arg-types simple-array-unsigned-byte-8
-                            positive-fixnum
-                            ,@(when setterp
-                                `(,result-type)))
-                ,@(when (and setterp big-endian-p)
-                    `((:temporary (:sc unsigned-reg
-                                       :from (:load 0)
-                                       :to (:result 0)) temp)))
-                (:results (result :scs (,result-sc)))
-                (:result-types ,result-type)
-                (:generator 3
-                  (let* ((base-disp (- (* vector-data-offset n-word-bytes)
-                                       other-pointer-lowtag))
-                         (operand-size ,(if (= bitsize 32) :dword :qword))
-                         (result-in-size (reg-in-size result operand-size))
+             (flet ((swap-tn-inst-form (tn-name)
+                      (if (= bitsize 16)
+                          `(inst rol ,tn-name 8)
+                          `(inst bswap ,tn-name))))
+               `(define-vop (,name)
+                  (:translate ,internal-name)
+                  (:policy :fast-safe)
+                  (:args (vector :scs (descriptor-reg))
+                         (index :scs (immediate unsigned-reg))
                          ,@(when setterp
-                             '((value (reg-in-size value* operand-size))))
-                         ,@(when (and setterp big-endian-p)
-                             '((temp (reg-in-size temp operand-size))))
-                         (memref (sc-case index
-                                   (immediate
-                                    (make-ea operand-size :base vector
-                                             :disp (+ (tn-value index) base-disp)))
-                                   (t
-                                    (make-ea operand-size
-                                             :base vector :index index
-                                             :disp base-disp)))))
-                    (declare (ignorable result-in-size))
-                    ,@(when (and setterp big-endian-p)
-                        `((inst mov temp value)
-                          (inst bswap temp)))
-                    ,(if setterp
-                         `(inst mov memref ,(if big-endian-p
-                                                'temp
-                                                'value))
-                         `(inst ,ref-mov-insn
-                                ,(if (and big-endian-p (= bitsize 32))
-                                     'result-in-size
-                                     'result)
-                                memref))
-                    ,@(if setterp
-                          '((move result value*))
-                          (when big-endian-p
-                            `((inst bswap
-                                    ,(if (= bitsize 32)
-                                         'result-in-size
-                                         'result))
-                              ,(when (and (= bitsize 32) signedp)
-                                 `(inst movsx result result-in-size)))))))))))
-    (loop for i from 0 upto #b1111
-          for bitsize = (if (logbitp 3 i) 32 64)
+                             `((value* :scs (,result-sc) :target result))))
+                  (:arg-types simple-array-unsigned-byte-8
+                              positive-fixnum
+                              ,@(when setterp
+                                  `(,result-type)))
+                  ,@(when (and setterp big-endian-p)
+                      `((:temporary (:sc unsigned-reg
+                                     :from (:load 0)
+                                     :to (:result 0)) temp)))
+                  (:results (result :scs (,result-sc)))
+                  (:result-types ,result-type)
+                  (:generator 3
+                    (let* ((base-disp (- (* vector-data-offset n-word-bytes)
+                                         other-pointer-lowtag))
+                           (operand-size ,(ecase bitsize
+                                            (16 :word)
+                                            (32 :dword)
+                                            (64 :qword)))
+                           (result-in-size (reg-in-size result operand-size))
+                           ,@(when setterp
+                               '((value (reg-in-size value* operand-size))))
+                           ,@(when (and setterp big-endian-p)
+                               '((temp (reg-in-size temp operand-size))))
+                           (memref (sc-case index
+                                     (immediate
+                                      (make-ea operand-size :base vector
+                                                            :disp (+ (tn-value index) base-disp)))
+                                     (t
+                                      (make-ea operand-size
+                                               :base vector :index index
+                                               :disp base-disp)))))
+                      (declare (ignorable result-in-size))
+                      ,@(when (and setterp big-endian-p)
+                          `((inst mov temp value)
+                            ,(swap-tn-inst-form 'temp)))
+                      ,(if setterp
+                           `(inst mov memref ,(if big-endian-p
+                                                  'temp
+                                                  'value))
+                           `(inst ,ref-mov-insn
+                                  ,(if (and big-endian-p (= bitsize 32))
+                                       'result-in-size
+                                       'result)
+                                  memref))
+                      ,@(if setterp
+                            '((move result value*))
+                            (when big-endian-p
+                              `(,(swap-tn-inst-form (if (/= bitsize 64)
+                                                        'result-in-size
+                                                        'result))
+                                ,(when (and (/= bitsize 64) signedp)
+                                   `(inst movsx result result-in-size))))))))))))
+    (loop for i from 0 upto #b10111
+          for bitsize = (ecase (ldb (byte 2 3) i)
+                          (0 16)
+                          (1 32)
+                          (2 64))
           for setterp = (logbitp 2 i)
           for signedp = (logbitp 1 i)
           for big-endian-p = (logbitp 0 i)
