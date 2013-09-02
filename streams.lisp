@@ -93,8 +93,11 @@
 	for byte-arglist = (if readp '(stream) '(integer stream))
 	for subfun = (if readp 'read-byte* 'write-byte*)
 	for element-type = `(,(if signedp 'signed-byte 'unsigned-byte) ,bitsize)
-        collect `(defun ,name ,byte-arglist
-		   (,subfun ,@byte-arglist ,n-bytes #',byte-fun)) into forms
+        collect `(progn
+		   ,@(when readp
+		       `((declaim (ftype (function (t) (values ,element-type &optional)) ,name))))
+		   (defun ,name ,byte-arglist
+		     (,subfun ,@byte-arglist ,n-bytes #',byte-fun))) into forms
 	if readp
 	  collect `(defun ,(stream-seq-fun-name bitsize t signedp big-endian-p)
 		       (result-type stream count)
