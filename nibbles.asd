@@ -69,5 +69,5 @@
 
 (defmethod asdf:perform ((op asdf:test-op)
                          (c (eql (asdf:find-system :nibbles-tests))))
-  (or (funcall (intern "DO-TESTS" (find-package "RTEST")))
+  (or (funcall (intern (symbol-name :do-tests) (find-package :rtest)))
       (error "TEST-OP failed for NIBBLES-TESTS")))
