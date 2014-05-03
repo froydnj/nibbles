@@ -44,6 +44,16 @@
     (intern (format nil "~:[WRITE~;READ~]-IEEE-~A/~:[LE~;BE~]-SEQUENCE"
 		    readp float-type big-endian-p))))
 
+(defun stream-into-seq-fun-name (bitsize signedp big-endian-p)
+  (let ((*package* (find-package :nibbles)))
+    (intern (format nil "READ-~:[U~;S~]B~D/~:[LE~;BE~]-INTO-SEQUENCE"
+                    signedp bitsize big-endian-p))))
+
+(defun stream-float-into-seq-fun-name (float-type big-endian-p)
+  (let ((*package* (find-package :nibbles)))
+    (intern (format nil "READ-IEEE-~A/~:[LE~;BE~]-INTO-SEQUENCE"
+                    float-type big-endian-p))))
+
 (defun internalify (s)
   (let ((*package* (find-package :nibbles)))
     (intern (concatenate 'string "%" (string s)))))
