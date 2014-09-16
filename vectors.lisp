@@ -58,6 +58,7 @@
 (defun not-supported ()
   (error "not supported"))
 
+#+sbcl (declaim (sb-ext:maybe-inline ieee-single-ref/be))
 (defun ieee-single-ref/be (vector index)
   (declare (ignorable vector index))
   #+sbcl
@@ -79,6 +80,7 @@
   #-(or sbcl cmu ccl allegro lispworks)
   (not-supported))
 
+#+sbcl (declaim (sb-ext:maybe-inline ieee-single-sef/be))
 (defun ieee-single-set/be (vector index value)
   (declare (ignorable value vector index))
   #+sbcl
@@ -109,6 +111,7 @@
   (not-supported))
 (defsetf ieee-single-ref/be ieee-single-set/be)
 
+#+sbcl (declaim (sb-ext:maybe-inline ieee-single-ref/le))
 (defun ieee-single-ref/le (vector index)
   (declare (ignorable vector index))
   #+sbcl
@@ -130,6 +133,7 @@
   #-(or sbcl cmu ccl allegro lispworks)
   (not-supported))
 
+#+sbcl (declaim (sb-ext:maybe-inline ieee-single-set/le))
 (defun ieee-single-set/le (vector index value)
   (declare (ignorable value vector index))
   #+sbcl
@@ -160,6 +164,7 @@
   (not-supported))
 (defsetf ieee-single-ref/le ieee-single-set/le)
 
+#+sbcl (declaim (sb-ext:maybe-inline ieee-double-ref/be))
 (defun ieee-double-ref/be (vector index)
   (declare (ignorable vector index))
   #+sbcl
@@ -177,6 +182,7 @@
   #-(or sbcl cmu ccl)
   (not-supported))
 
+#+sbcl (declaim (sb-ext:maybe-inline ieee-double-set/be))
 (defun ieee-double-set/be (vector index value)
   (declare (ignorable value vector index))
   #+sbcl
@@ -198,6 +204,7 @@
   (not-supported))
 (defsetf ieee-double-ref/be ieee-double-set/be)
 
+#+sbcl (declaim (sb-ext:maybe-inline ieee-double-ref/le))
 (defun ieee-double-ref/le (vector index)
   (declare (ignorable vector index))
   #+sbcl
@@ -215,6 +222,7 @@
   #-(or sbcl cmu ccl)
   (not-supported))
 
+#+sbcl (declaim (sb-ext:maybe-inline ieee-double-set/le))
 (defun ieee-double-set/le (vector index value)
   (declare (ignorable value vector index))
   #+sbcl
