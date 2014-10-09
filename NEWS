@@ -1,5 +1,17 @@
 hey emacs, show me an -*- mode: outline -*-
 
+* Version 0.12, released 2014-10-08
+
+** bug fixes
+
+Better support for Allegro CL modern mode.  (Thanks to Markus Flambard.)
+
+More correct code generation for x86-64 SBCL.
+
+** new features
+
+Float accessors are now MAYBE-INLINE on SBCL.  (Thanks to Jan Moringen.)
+
 * Version 0.11, released 2013-01-14
 
 ** bug fixes

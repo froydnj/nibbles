@@ -29,7 +29,7 @@
   (do-silently (call-next-method))))
 
 (asdf:defsystem :nibbles
-  :version "0.11"
+  :version "0.12"
   :author "Nathan Froyd <froydnj@gmail.com>"
   :maintainer "Nathan Froyd <froydnj@gmail.com>"
   :description "A library for accessing octet-addressed blocks of data"
