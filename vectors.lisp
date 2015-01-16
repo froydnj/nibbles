@@ -208,16 +208,16 @@
 (defun ieee-double-ref/le (vector index)
   (declare (ignorable vector index))
   #+ccl
-  (let ((upper (ub32ref/le vector (+ index 4)))
-        (lower (ub32ref/le vector index)))
+  (let ((lower (ub32ref/le vector index))
+        (upper (ub32ref/le vector (+ index 4))))
     (ccl::double-float-from-bits upper lower))
   #+cmu
-  (let ((upper (sb32ref/le vector (+ index 4)))
-        (lower (ub32ref/le vector index)))
+  (let ((lower (ub32ref/le vector index))
+        (upper (sb32ref/le vector (+ index 4))))
     (kernel:make-double-float upper lower))
   #+sbcl
-  (let ((upper (sb32ref/le vector (+ index 4)))
-        (lower (ub32ref/le vector index)))
+  (let ((lower (ub32ref/le vector index))
+        (upper (sb32ref/le vector (+ index 4))))
     (sb-kernel:make-double-float upper lower))
   #-(or ccl cmu sbcl)
   (not-supported))
@@ -227,18 +227,18 @@
   (declare (ignorable value vector index))
   #+ccl
   (multiple-value-bind (upper lower) (ccl::double-float-bits value)
-    (setf (ub32ref/le vector (+ index 4)) upper
-          (ub32ref/le vector index) lower)
+    (setf (ub32ref/le vector index) lower
+          (ub32ref/le vector (+ index 4)) upper)
     value)
   #+cmu
   (progn
-    (setf (sb32ref/le vector (+ index 4)) (kernel:double-float-high-bits value)
-          (ub32ref/le vector index) (kernel:double-float-low-bits value))
+    (setf (ub32ref/le vector index) (kernel:double-float-low-bits value)
+          (sb32ref/le vector (+ index 4)) (kernel:double-float-high-bits value))
     value)
   #+sbcl
   (progn
-    (setf (sb32ref/le vector (+ index 4)) (sb-kernel:double-float-high-bits value)
-          (ub32ref/le vector index) (sb-kernel:double-float-low-bits value))
+    (setf (ub32ref/le vector index) (sb-kernel:double-float-low-bits value)
+          (sb32ref/le vector (+ index 4)) (sb-kernel:double-float-high-bits value))
     value)
   #-(or ccl cmu sbcl)
   (not-supported))
