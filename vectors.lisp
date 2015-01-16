@@ -61,9 +61,12 @@
 #+sbcl (declaim (sb-ext:maybe-inline ieee-single-ref/be))
 (defun ieee-single-ref/be (vector index)
   (declare (ignorable vector index))
+  #+abcl
+  (system::make-single-float (sb32ref/be vector index))
   #+allegro
-  (let ((b (ub32ref/be vector index)))
-    (excl:shorts-to-single-float (ldb (byte 16 16) b) (ldb (byte 16 0) b)))
+  (let ((high (ub16ref/be vector index))
+        (low (ub16ref/be vector (+ index 2))))
+    (excl:shorts-to-single-float high low))
   #+ccl
   (ccl::host-single-float-from-unsigned-byte-32 (ub32ref/be vector index))
   #+cmu
@@ -77,16 +80,20 @@
     (sys:typed-aref 'single-float v 0))
   #+sbcl
   (sb-kernel:make-single-float (sb32ref/be vector index))
-  #-(or allegro ccl cmu lispworks sbcl)
+  #-(or abcl allegro ccl cmu lispworks sbcl)
   (not-supported))
 
 #+sbcl (declaim (sb-ext:maybe-inline ieee-single-sef/be))
 (defun ieee-single-set/be (vector index value)
   (declare (ignorable value vector index))
+  #+abcl
+  (progn
+    (setf (sb32ref/be vector index) (system:single-float-bits value))
+    value)
   #+allegro
-  (multiple-value-bind (hi lo) (excl:single-float-to-shorts value)
-    (setf (ub16ref/be vector index) hi
-          (ub16ref/be vector (+ index 2)) lo)
+  (multiple-value-bind (high low) (excl:single-float-to-shorts value)
+    (setf (ub16ref/be vector index) high
+          (ub16ref/be vector (+ index 2)) low)
     value)
   #+ccl
   (progn
@@ -107,16 +114,19 @@
   (progn
     (setf (sb32ref/be vector index) (sb-kernel:single-float-bits value))
     value)
-  #-(or allegro ccl cmu lispworks sbcl)
+  #-(or abcl allegro ccl cmu lispworks sbcl)
   (not-supported))
 (defsetf ieee-single-ref/be ieee-single-set/be)
 
 #+sbcl (declaim (sb-ext:maybe-inline ieee-single-ref/le))
 (defun ieee-single-ref/le (vector index)
   (declare (ignorable vector index))
+  #+abcl
+  (system::make-single-float (sb32ref/le vector index))
   #+allegro
-  (let ((b (ub32ref/le vector index)))
-    (excl:shorts-to-single-float (ldb (byte 16 16) b) (ldb (byte 16 0) b)))
+  (let ((low (ub16ref/le vector index))
+        (high (ub16ref/le vector (+ index 2))))
+    (excl:shorts-to-single-float high low))
   #+ccl
   (ccl::host-single-float-from-unsigned-byte-32 (ub32ref/le vector index))
   #+cmu
@@ -130,16 +140,20 @@
     (sys:typed-aref 'single-float v 0))
   #+sbcl
   (sb-kernel:make-single-float (sb32ref/le vector index))
-  #-(or allegro cmu ccl lispworks sbcl)
+  #-(or abcl allegro ccl cmu lispworks sbcl)
   (not-supported))
 
 #+sbcl (declaim (sb-ext:maybe-inline ieee-single-set/le))
 (defun ieee-single-set/le (vector index value)
   (declare (ignorable value vector index))
+  #+abcl
+  (progn
+    (setf (sb32ref/le vector index) (system:single-float-bits value))
+    value)
   #+allegro
-  (multiple-value-bind (hi lo) (excl:single-float-to-shorts value)
-    (setf (ub16ref/le vector (+ index 2)) hi
-          (ub16ref/le vector index) lo)
+  (multiple-value-bind (high low) (excl:single-float-to-shorts value)
+    (setf (ub16ref/le vector index) low
+          (ub16ref/le vector (+ index 2)) high)
     value)
   #+ccl
   (progn
@@ -160,13 +174,23 @@
   (progn
     (setf (sb32ref/le vector index) (sb-kernel:single-float-bits value))
     value)
-  #-(or allegro ccl cmu lispworks sbcl)
+  #-(or abcl allegro ccl cmu lispworks sbcl)
   (not-supported))
 (defsetf ieee-single-ref/le ieee-single-set/le)
 
 #+sbcl (declaim (sb-ext:maybe-inline ieee-double-ref/be))
 (defun ieee-double-ref/be (vector index)
   (declare (ignorable vector index))
+  #+abcl
+  (let ((upper (sb32ref/be vector index))
+        (lower (ub32ref/be vector (+ index 4))))
+    (system:make-double-float (logior (ash upper 32) lower)))
+  #+allegro
+  (let ((u3 (ub16ref/be vector index))
+        (u2 (ub16ref/be vector (+ index 2)))
+        (u1 (ub16ref/be vector (+ index 4)))
+        (u0 (ub16ref/be vector (+ index 6))))
+    (excl:shorts-to-double-float u3 u2 u1 u0))
   #+ccl
   (let ((upper (ub32ref/be vector index))
         (lower (ub32ref/be vector (+ index 4))))
@@ -179,12 +203,24 @@
   (let ((upper (sb32ref/be vector index))
         (lower (ub32ref/be vector (+ index 4))))
     (sb-kernel:make-double-float upper lower))
-  #-(or ccl cmu sbcl)
+  #-(or abcl allegro ccl cmu sbcl)
   (not-supported))
 
 #+sbcl (declaim (sb-ext:maybe-inline ieee-double-set/be))
 (defun ieee-double-set/be (vector index value)
   (declare (ignorable value vector index))
+  #+abcl
+  (progn
+    (setf (sb32ref/be vector index) (system::double-float-high-bits value)
+          (ub32ref/be vector (+ index 4)) (system::double-float-low-bits value))
+    value)
+  #+allegro
+  (multiple-value-bind (us3 us2 us1 us0) (excl:double-float-to-shorts value)
+    (setf (ub16ref/be vector index) u3
+          (ub16ref/be vector (+ index 2)) u2
+          (ub16ref/be vector (+ index 4)) u1
+          (ub16ref/be vector (+ index 6)) u0)
+    value)
   #+ccl
   (multiple-value-bind (upper lower) (ccl::double-float-bits value)
     (setf (ub32ref/be vector index) upper
@@ -200,13 +236,23 @@
     (setf (sb32ref/be vector index) (sb-kernel:double-float-high-bits value)
           (ub32ref/be vector (+ index 4)) (sb-kernel:double-float-low-bits value))
     value)
-  #-(or ccl cmu sbcl)
+  #-(or abcl allegro ccl cmu sbcl)
   (not-supported))
 (defsetf ieee-double-ref/be ieee-double-set/be)
 
 #+sbcl (declaim (sb-ext:maybe-inline ieee-double-ref/le))
 (defun ieee-double-ref/le (vector index)
   (declare (ignorable vector index))
+  #+abcl
+  (let ((lower (ub32ref/le vector index))
+        (upper (sb32ref/le vector (+ index 4))))
+    (system:make-double-float (logior (ash upper 32) lower)))
+  #+allegro
+  (let ((u0 (ub16ref/le vector index))
+        (u1 (ub16ref/le vector (+ index 2)))
+        (u2 (ub16ref/le vector (+ index 4)))
+        (u3 (ub16ref/le vector (+ index 6))))
+    (excl:shorts-to-double-float u3 u2 u1 u0))
   #+ccl
   (let ((lower (ub32ref/le vector index))
         (upper (ub32ref/le vector (+ index 4))))
@@ -219,12 +265,24 @@
   (let ((lower (ub32ref/le vector index))
         (upper (sb32ref/le vector (+ index 4))))
     (sb-kernel:make-double-float upper lower))
-  #-(or ccl cmu sbcl)
+  #-(or abcl allegro ccl cmu sbcl)
   (not-supported))
 
 #+sbcl (declaim (sb-ext:maybe-inline ieee-double-set/le))
 (defun ieee-double-set/le (vector index value)
   (declare (ignorable value vector index))
+  #+abcl
+  (progn
+    (setf (ub32ref/le vector index) (system::double-float-low-bits value)
+          (sb32ref/le vector (+ index 4)) (system::double-float-high-bits value))
+    value)
+  #+allegro
+  (multiple-value-bind (us3 us2 us1 us0) (excl:double-float-to-shorts value)
+    (setf (ub16ref/le vector index) u0
+          (ub16ref/le vector (+ index 2)) u1
+          (ub16ref/le vector (+ index 4)) u2
+          (ub16ref/le vector (+ index 6)) u3)
+    value)
   #+ccl
   (multiple-value-bind (upper lower) (ccl::double-float-bits value)
     (setf (ub32ref/le vector index) lower
@@ -240,6 +298,6 @@
     (setf (ub32ref/le vector index) (sb-kernel:double-float-low-bits value)
           (sb32ref/le vector (+ index 4)) (sb-kernel:double-float-high-bits value))
     value)
-  #-(or ccl cmu sbcl)
+  #-(or abcl allegro ccl cmu sbcl)
   (not-supported))
 (defsetf ieee-double-ref/le ieee-double-set/le)
