@@ -97,7 +97,7 @@
         (let ((compiled (compile-quietly
                            `(lambda (v i)
                               (declare (type (simple-array (unsigned-byte 8) (*)) v))
-                              (declare (type (integer 0 #.(1- array-dimension-limit))))
+                              (declare (type (integer 0 #.(1- array-dimension-limit)) i))
                               (declare (optimize speed (debug 0)))
                               (,reffer v i)))))
           (run-test compiled))))))
@@ -133,7 +133,7 @@
             (let ((compiled (compile-quietly
                              `(lambda (v i new)
                                 (declare (type (simple-array (unsigned-byte 8) (*)) v))
-                                (declare (type (integer 0 #.(1- array-dimension-limit))))
+                                (declare (type (integer 0 #.(1- array-dimension-limit)) i))
                                 (declare (type (,(if signedp 'signed-byte 'unsigned-byte)
                                                  ,bitsize) new))
                                 (declare (optimize speed (debug 0)))
