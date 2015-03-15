@@ -36,7 +36,7 @@
 
 (defun read-into-list* (stream list start end n-bytes reffer)
   (declare (type function reffer))
-  (do ((end (or end) (length list))
+  (do ((end (or end (length list)))
        (v (make-array n-bytes :element-type '(unsigned-byte 8)))
        (rem (nthcdr start list) (rest rem))
        (i start (1+ i)))
