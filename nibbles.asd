@@ -32,7 +32,8 @@
   :version "0.12"
   :author "Nathan Froyd <froydnj@gmail.com>"
   :maintainer "Nathan Froyd <froydnj@gmail.com>"
-  :description "A library for accessing octet-addressed blocks of data"
+  :description "A library for accessing octet-addressed blocks of data in big- and little-endian orders"
+  :license "BSD-style (http://opensource.org/licenses/BSD-3-Clause)"
   :default-component-class nibbles-source-file
   :components ((:static-file "README")
                (:static-file "LICENSE")
