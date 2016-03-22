@@ -14,10 +14,10 @@
         (*print-case* :upcase)
         #+sbcl (sb-ext:*inline-expansion-limit* (max sb-ext:*inline-expansion-limit* 1000))
         #+cmu (ext:*inline-expansion-limit* (max ext:*inline-expansion-limit* 1000)))
-    (do-silently (call-next-method))))
+    (call-next-method)))
 
 (defmethod asdf:perform :around ((op asdf:load-op) (c nibbles-source-file))
-  (do-silently (call-next-method)))
+  (call-next-method))
 
 (asdf:defsystem :nibbles
   :version "0.12"
