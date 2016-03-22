@@ -9,15 +9,6 @@
 (defclass txt-file (asdf:doc-file) ((type :initform "txt")))
 (defclass css-file (asdf:doc-file) ((type :initform "css")))
 
-;;; Borrowed from iolib.
-(defun defknown-redefinition-error-p (error)
-  (and (typep error 'simple-error)
-       (search "overwriting old FUN-INFO"
-               (simple-condition-format-control error))))
-
-(macrolet ((do-silently (&body body)
-             `(handler-bind (((satisfies defknown-redefinition-error-p) #'continue))
-                ,@body)))
 (defmethod asdf:perform :around ((op asdf:compile-op) (c nibbles-source-file))
   (let ((*print-base* 10)               ; INTERN'ing FORMAT'd symbols
         (*print-case* :upcase)
@@ -26,7 +17,7 @@
     (do-silently (call-next-method))))
 
 (defmethod asdf:perform :around ((op asdf:load-op) (c nibbles-source-file))
-  (do-silently (call-next-method))))
+  (do-silently (call-next-method)))
 
 (asdf:defsystem :nibbles
   :version "0.12"
