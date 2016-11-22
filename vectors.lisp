@@ -216,10 +216,10 @@
     value)
   #+allegro
   (multiple-value-bind (us3 us2 us1 us0) (excl:double-float-to-shorts value)
-    (setf (ub16ref/be vector index) u3
-          (ub16ref/be vector (+ index 2)) u2
-          (ub16ref/be vector (+ index 4)) u1
-          (ub16ref/be vector (+ index 6)) u0)
+    (setf (ub16ref/be vector index) us3
+          (ub16ref/be vector (+ index 2)) us2
+          (ub16ref/be vector (+ index 4)) us1
+          (ub16ref/be vector (+ index 6)) us0)
     value)
   #+ccl
   (multiple-value-bind (upper lower) (ccl::double-float-bits value)
@@ -278,10 +278,10 @@
     value)
   #+allegro
   (multiple-value-bind (us3 us2 us1 us0) (excl:double-float-to-shorts value)
-    (setf (ub16ref/le vector index) u0
-          (ub16ref/le vector (+ index 2)) u1
-          (ub16ref/le vector (+ index 4)) u2
-          (ub16ref/le vector (+ index 6)) u3)
+    (setf (ub16ref/le vector index) us0
+          (ub16ref/le vector (+ index 2)) us1
+          (ub16ref/le vector (+ index 4)) us2
+          (ub16ref/le vector (+ index 6)) us3)
     value)
   #+ccl
   (multiple-value-bind (upper lower) (ccl::double-float-bits value)
